@@ -16,12 +16,6 @@
       "migrations_dir": "drizzle/migrations"
     }
   ],
-  "r2_buckets": [
-    {
-      "binding": "R2",
-      "bucket_name": "13f-raw"
-    }
-  ],
   "kv_namespaces": [
     {
       "binding": "KV",
@@ -37,6 +31,6 @@
     ]
   },
   "vars": {
-    "APP_URL": "http://localhost:3000"
+    "APP_URL": "https://13f-analyzer.0xrushmoon.workers.dev"
   }
 }
