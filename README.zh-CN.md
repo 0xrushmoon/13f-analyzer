@@ -7,6 +7,7 @@
 [![CI](https://github.com/0xrushmoon/13f-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/0xrushmoon/13f-analyzer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Cloudflare Workers](https://img.shields.io/badge/Deploy-Cloudflare%20Workers-F38020)](https://workers.cloudflare.com/)
+[![在线预览](https://img.shields.io/badge/在线预览-待配置-yellow)](https://github.com/0xrushmoon/13f-analyzer#预览)
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [贡献指南](CONTRIBUTING.zh-CN.md) · [API 文档](/docs)
 
@@ -14,7 +15,39 @@
 
 ---
 
-## 简介
+## 预览
+
+| 环境 | 地址 | 启动方式 |
+|------|------|----------|
+| **本地开发（最快）** | http://localhost:3000 | `pnpm install && pnpm dev` |
+| **Cloudflare 本地** | http://localhost:8787 | `pnpm preview`（Workers 运行时 + 本地 D1） |
+| **生产环境** | `https://13f-analyzer.<你的子域名>.workers.dev` | 见下方 [部署](#部署) |
+
+> **生产地址尚未上线**，需一次性完成：
+> 1. [注册 workers.dev 子域名](https://dash.cloudflare.com/51f97220012f6789ddb53f237d86b13c/workers/onboarding)
+> 2. [启用 R2](https://dash.cloudflare.com/51f97220012f6789ddb53f237d86b13c/r2/overview)（有免费额度，见下文）
+> 3. 运行 `pnpm run deploy`
+
+**Cloudflare 控制台：** [13f-analyzer Worker](https://dash.cloudflare.com/51f97220012f6789ddb53f237d86b13c/workers/services/view/13f-analyzer/production)
+
+---
+
+### Cloudflare R2 要付费吗？
+
+**对本项目来说，基本免费。** R2 有永久免费额度（[官方定价](https://developers.cloudflare.com/r2/pricing/)）：
+
+| 项目 | 每月免费额度 |
+|------|-------------|
+| 存储空间 | 10 GB |
+| 写入/列表（Class A） | 100 万次 |
+| 读取（Class B） | 1000 万次 |
+| 出站流量 | **永久免费** |
+
+超出免费额度才计费。首次启用 R2 时 Cloudflare **可能要求绑定支付方式**，但在免费额度内不会产生费用。
+
+`13f-raw` 桶用于存 SEC 原始 XML，正常使用远低于免费上限。
+
+---
 
 **13F 智能分析平台** 是开源 SaaS 项目，自动抓取 [SEC Form 13F-HR](https://www.sec.gov/data-research/sec-markets-data/form-13f-data-sets) 申报，将结构化持仓存入 **Cloudflare D1**，并提供：
 

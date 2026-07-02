@@ -7,6 +7,7 @@
 [![CI](https://github.com/0xrushmoon/13f-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/0xrushmoon/13f-analyzer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Cloudflare Workers](https://img.shields.io/badge/Deploy-Cloudflare%20Workers-F38020)](https://workers.cloudflare.com/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-pending%20setup-yellow)](https://github.com/0xrushmoon/13f-analyzer#preview)
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [Contributing](CONTRIBUTING.md) · [API Docs](/docs)
 
@@ -14,7 +15,39 @@
 
 ---
 
-## Overview
+## Preview
+
+| Environment | URL | How to run |
+|-------------|-----|------------|
+| **Local (fastest)** | http://localhost:3000 | `pnpm install && pnpm dev` |
+| **Cloudflare local** | http://localhost:8787 | `pnpm preview` (Workers runtime + D1 local) |
+| **Production** | `https://13f-analyzer.<your-subdomain>.workers.dev` | See [Deploy](#deploy) below |
+
+> **Production URL is not live yet.** One-time setup required:
+> 1. [Register workers.dev subdomain](https://dash.cloudflare.com/51f97220012f6789ddb53f237d86b13c/workers/onboarding)
+> 2. [Enable R2](https://dash.cloudflare.com/51f97220012f6789ddb53f237d86b13c/r2/overview) (free tier — see below)
+> 3. Run `pnpm run deploy`
+
+**Cloudflare Dashboard:** [13f-analyzer Worker](https://dash.cloudflare.com/51f97220012f6789ddb53f237d86b13c/workers/services/view/13f-analyzer/production)
+
+---
+
+### Cloudflare R2 — is it paid?
+
+**Mostly free for this project.** R2 has a permanent free tier ([official pricing](https://developers.cloudflare.com/r2/pricing/)):
+
+| Item | Free allowance / month |
+|------|------------------------|
+| Storage | 10 GB |
+| Writes / lists (Class A) | 1 million ops |
+| Reads (Class B) | 10 million ops |
+| Egress (download) | **$0 always** |
+
+You only pay if you exceed these limits. Cloudflare may ask for a **payment method when enabling R2** — you are not charged until usage goes beyond the free tier.
+
+Our `13f-raw` bucket stores raw SEC XML; typical usage stays well within the free tier.
+
+---
 
 **13F Intelligence Platform** is an open-source SaaS that ingests [SEC Form 13F-HR](https://www.sec.gov/data-research/sec-markets-data/form-13f-data-sets) filings, stores structured holdings in **Cloudflare D1**, and provides:
 
