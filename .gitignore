@@ -1,0 +1,33 @@
+# dependencies
+node_modules
+.pnpm-store
+
+# next.js
+.next
+.open-next
+out
+
+# env
+.env
+.env.local
+.env.*.local
+
+# debug
+npm-debug.log*
+pnpm-debug.log*
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# wrangler
+.wrangler
+.dev.vars
+
+# IDE
+.idea
+.vscode
+*.swp
+
+# OS
+.DS_Store
