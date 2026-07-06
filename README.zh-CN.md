@@ -7,7 +7,7 @@
 [![CI](https://github.com/0xrushmoon/13f-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/0xrushmoon/13f-analyzer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Cloudflare Workers](https://img.shields.io/badge/Deploy-Cloudflare%20Workers-F38020)](https://workers.cloudflare.com/)
-[![在线预览](https://img.shields.io/badge/在线预览-待配置-yellow)](https://github.com/0xrushmoon/13f-analyzer#预览)
+[![在线预览](https://img.shields.io/badge/在线预览-holdingskit--api.rushmoon.workers.dev-22c55e)](https://holdingskit-api.rushmoon.workers.dev)
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [贡献指南](CONTRIBUTING.zh-CN.md) · [API 文档](/docs)
 
@@ -21,14 +21,12 @@
 |------|------|----------|
 | **本地开发（最快）** | http://localhost:3000 | `pnpm install && pnpm dev` |
 | **Cloudflare 本地** | http://localhost:8787 | `pnpm preview`（Workers 运行时 + 本地 D1） |
-| **生产环境** | `https://13f-analyzer.<你的子域名>.workers.dev` | 见下方 [部署](#部署) |
+| **生产环境** | https://holdingskit-api.rushmoon.workers.dev | `pnpm run deploy` |
 
-> **生产地址尚未上线**，需一次性完成：
-> 1. [注册 workers.dev 子域名](https://dash.cloudflare.com/51f97220012f6789ddb53f237d86b13c/workers/onboarding)
-> 2. [启用 R2](https://dash.cloudflare.com/51f97220012f6789ddb53f237d86b13c/r2/overview)（有免费额度，见下文）
-> 3. 运行 `pnpm run deploy`
+> **已上线** https://holdingskit-api.rushmoon.workers.dev  
+> Agent Card：`/.well-known/agent-card.json` · OpenAPI：`/openapi.json`
 
-**Cloudflare 控制台：** [13f-analyzer Worker](https://dash.cloudflare.com/51f97220012f6789ddb53f237d86b13c/workers/services/view/13f-analyzer/production)
+**Cloudflare 控制台：** [holdingskit-api Worker](https://dash.cloudflare.com/51f97220012f6789ddb53f237d86b13c/workers/services/view/holdingskit-api/production)
 
 ---
 
@@ -75,7 +73,7 @@
 | 前端 | Next.js 15、React 19、Tailwind、shadcn/ui、Recharts |
 | 运行时 | Cloudflare Workers、D1、R2、KV、Queues、Cron |
 | ORM | Drizzle |
-| AI | DeepSeek API（`deepseek-v4-pro`） |
+| AI | DeepSeek API（`deepseek-v4-flash`） |
 | 支付 | Stripe |
 
 ## 快速开始
@@ -182,6 +180,24 @@ src/
 ## 免责声明
 
 数据来源于 SEC EDGAR，相对季度末可能滞后最多 **45 天**。本软件仅供 **研究参考**，不构成投资建议。
+
+## 可发现性（SEO & Agent）
+
+HoldingsKit 已针对搜索引擎与 AI Agent 发现进行优化：
+
+| 资源 | 地址 |
+|------|------|
+| Sitemap | `/sitemap.xml` |
+| Robots | `/robots.txt` |
+| LLMs.txt | `/llms.txt` |
+| Agent Card (A2A) | `/.well-known/agent-card.json` |
+| OpenAPI 3.1 | `/openapi.json` |
+| AI Plugin 清单 | `/.well-known/ai-plugin.json` |
+| MCP 信息 | `/.well-known/mcp.json` |
+
+完整分发清单见 [DISTRIBUTION.md](./DISTRIBUTION.md)（Google Search Console、Bing、Agent 目录、Product Hunt、Show HN 等）。
+
+**GitHub Topics 建议：** `13f`、`sec-edgar`、`institutional-holdings`、`agent-api`、`mpp`、`openapi`、`cloudflare-workers`、`fintech`、`ai-agents`
 
 ## 许可证
 

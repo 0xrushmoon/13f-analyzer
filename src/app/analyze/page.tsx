@@ -1,17 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { ChevronDown, ChevronUp, Send } from "lucide-react";
+import { useLocale } from "@/contexts/locale-context";
 
 interface Message {
   role: "user" | "assistant";
@@ -20,6 +16,10 @@ interface Message {
 }
 
 function AnalyzeContent() {
+  const { dict } = useLocale();
+  const t = dict.analyze;
+  const pw = dict.paywall;
+
   const searchParams = useSearchParams();
   const [cik, setCik] = useState(searchParams.get("cik") ?? "");
   const [question, setQuestion] = useState("");
@@ -27,10 +27,12 @@ function AnalyzeContent() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedThinking, setExpandedThinking] = useState<number | null>(null);
+  const [paywall, setPaywall] = useState<"payment" | "email" | null>(null);
 
   const sendMessage = async () => {
     if (!cik || !question.trim()) return;
     setLoading(true);
+    setPaywall(null);
     const userMsg: Message = { role: "user", content: question };
     setMessages((prev) => [...prev, userMsg]);
     setQuestion("");
@@ -46,20 +48,36 @@ function AnalyzeContent() {
         content?: string;
         error?: string;
         thinking?: string;
+        code?: string;
       };
+      if (res.status === 402 || data.code === "PAYMENT_REQUIRED") {
+        setPaywall("payment");
+        setMessages((prev) => prev.slice(0, -1));
+        return;
+      }
+      if (res.status === 403 && data.code === "EMAIL_NOT_VERIFIED") {
+        setPaywall("email");
+        setMessages((prev) => prev.slice(0, -1));
+        return;
+      }
+      if (res.status === 401) {
+        setPaywall("payment");
+        setMessages((prev) => prev.slice(0, -1));
+        return;
+      }
       if (data.sessionId) setSessionId(data.sessionId);
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: data.content ?? data.error ?? "分析失败",
+          content: data.content ?? data.error ?? t.analysisFailed,
           thinking: data.thinking,
         },
       ]);
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "请求失败，请稍后重试。" },
+        { role: "assistant", content: t.requestFailed },
       ]);
     } finally {
       setLoading(false);
@@ -68,35 +86,60 @@ function AnalyzeContent() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-2">AI 持仓分析</h1>
-      <p className="text-muted-foreground mb-8">
-        基于 DeepSeek 大模型，提供连贯的多轮 13F 持仓解读
+      <p className="text-[10px] uppercase tracking-[0.2em] text-primary mb-2">
+        AI · DeepSeek
       </p>
+      <h1 className="text-2xl font-medium mb-2">{t.title}</h1>
+      <p className="text-muted-foreground text-xs mb-6">{t.subtitle}</p>
 
-      <Card className="mb-6">
-        <CardContent className="pt-6">
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <Label htmlFor="cik">机构 CIK</Label>
-              <Input
-                id="cik"
-                value={cik}
-                onChange={(e) => setCik(e.target.value)}
-                placeholder="0001067983（伯克希尔）"
-              />
+      {paywall && (
+        <div className="panel mb-6 border-primary/40">
+          <div className="panel-body text-center py-6">
+            <p className="text-sm font-medium">{pw.title}</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              {paywall === "email" ? pw.verifyEmail : pw.description}
+            </p>
+            <div className="flex justify-center gap-2 mt-4">
+              {paywall === "email" ? (
+                <Button size="sm" className="h-8 text-xs" asChild>
+                  <Link href="/login">{dict.nav.login}</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button size="sm" className="h-8 text-xs" asChild>
+                    <Link href="/pricing">{pw.upgrade}</Link>
+                  </Button>
+                  <Button size="sm" variant="outline" className="h-8 text-xs" asChild>
+                    <Link href="/login">{dict.nav.login}</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
 
-      <Card className="mb-6 min-h-[400px] flex flex-col">
-        <CardHeader>
-          <CardTitle>对话</CardTitle>
-        </CardHeader>
-        <CardContent className="flex-1 space-y-4">
+      <div className="panel mb-4">
+        <div className="panel-body">
+          <Label htmlFor="cik" className="text-xs">
+            {t.cikLabel}
+          </Label>
+          <Input
+            id="cik"
+            className="h-8 text-xs mt-1"
+            value={cik}
+            onChange={(e) => setCik(e.target.value)}
+            placeholder={t.cikPlaceholder}
+          />
+        </div>
+      </div>
+
+      <div className="panel mb-4 min-h-[400px] flex flex-col">
+        <div className="panel-header">{t.chatTitle}</div>
+        <div className="panel-body flex-1 space-y-4">
           {messages.length === 0 && (
             <p className="text-muted-foreground text-center py-12">
-              输入机构 CIK 并提出问题，例如：「分析伯克希尔最新持仓的行业分布」
+              {t.emptyState}
             </p>
           )}
           {messages.map((msg, i) => (
@@ -124,7 +167,7 @@ function AnalyzeContent() {
                       ) : (
                         <ChevronDown className="h-3 w-3" />
                       )}
-                      思考过程
+                      {t.thinking}
                     </button>
                     {expandedThinking === i && (
                       <pre className="text-xs mt-1 whitespace-pre-wrap opacity-80 max-h-40 overflow-y-auto">
@@ -138,22 +181,23 @@ function AnalyzeContent() {
             </div>
           ))}
           {loading && (
-            <p className="text-muted-foreground text-sm animate-pulse">
-              AI 正在分析中...
+            <p className="text-muted-foreground text-xs animate-pulse">
+              {t.loading}
             </p>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <div className="flex gap-2">
         <Input
+          className="h-9 text-xs"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          placeholder="输入您的问题..."
+          placeholder={t.inputPlaceholder}
           onKeyDown={(e) => e.key === "Enter" && !loading && sendMessage()}
           disabled={loading}
         />
-        <Button onClick={sendMessage} disabled={loading || !cik}>
+        <Button className="h-9" onClick={sendMessage} disabled={loading || !cik}>
           <Send className="h-4 w-4" />
         </Button>
       </div>
@@ -162,8 +206,10 @@ function AnalyzeContent() {
 }
 
 export default function AnalyzePage() {
+  const { dict } = useLocale();
+
   return (
-    <Suspense fallback={<p className="p-8">加载中...</p>}>
+    <Suspense fallback={<p className="p-8">{dict.analyze.pageLoading}</p>}>
       <AnalyzeContent />
     </Suspense>
   );

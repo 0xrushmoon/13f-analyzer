@@ -5,7 +5,7 @@ import { useLocale } from "@/contexts/locale-context";
 import { Button } from "@/components/ui/button";
 
 export function LanguageSwitcher() {
-  const { locale, setLocale } = useLocale();
+  const { locale, setLocale, dict } = useLocale();
 
   const toggle = () => {
     const next: Locale = locale === "en" ? "zh-CN" : "en";
@@ -14,11 +14,11 @@ export function LanguageSwitcher() {
 
   return (
     <Button
-      variant="outline"
+      variant="ghost"
       size="sm"
       onClick={toggle}
-      className="min-w-[4.5rem] font-normal"
-      aria-label="Switch language"
+      className="h-8 min-w-[3rem] px-2 text-[10px] font-normal header-btn"
+      aria-label={dict.theme.language}
     >
       {localeNames[locale === "en" ? "zh-CN" : "en"]}
     </Button>

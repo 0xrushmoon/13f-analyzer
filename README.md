@@ -7,7 +7,7 @@
 [![CI](https://github.com/0xrushmoon/13f-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/0xrushmoon/13f-analyzer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Cloudflare Workers](https://img.shields.io/badge/Deploy-Cloudflare%20Workers-F38020)](https://workers.cloudflare.com/)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-pending%20setup-yellow)](https://github.com/0xrushmoon/13f-analyzer#preview)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-holdingskit--api.rushmoon.workers.dev-22c55e)](https://holdingskit-api.rushmoon.workers.dev)
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [Contributing](CONTRIBUTING.md) · [API Docs](/docs)
 
@@ -21,12 +21,10 @@
 |-------------|-----|------------|
 | **Local (fastest)** | http://localhost:3000 | `pnpm install && pnpm dev` |
 | **Cloudflare local** | http://localhost:8787 | `pnpm preview` (Workers runtime + D1 local) |
-| **Production** | `https://13f-analyzer.<your-subdomain>.workers.dev` | See [Deploy](#deploy) below |
+| **Production** | https://holdingskit-api.rushmoon.workers.dev | `pnpm run deploy` |
 
-> **Production URL is not live yet.** One-time setup required:
-> 1. [Register workers.dev subdomain](https://dash.cloudflare.com/51f97220012f6789ddb53f237d86b13c/workers/onboarding)
-> 2. [Enable R2](https://dash.cloudflare.com/51f97220012f6789ddb53f237d86b13c/r2/overview) (free tier — see below)
-> 3. Run `pnpm run deploy`
+> **Live at** https://holdingskit-api.rushmoon.workers.dev  
+> Agent Card: `/.well-known/agent-card.json` · OpenAPI: `/openapi.json`
 
 **Cloudflare Dashboard:** [13f-analyzer Worker](https://dash.cloudflare.com/51f97220012f6789ddb53f237d86b13c/workers/services/view/13f-analyzer/production)
 
@@ -75,7 +73,7 @@ Built for researchers, quant builders, and teams who want **smart-money visibili
 | Frontend | Next.js 15, React 19, Tailwind, shadcn/ui, Recharts |
 | Runtime | Cloudflare Workers, D1, R2, KV, Queues, Cron |
 | ORM | Drizzle |
-| AI | DeepSeek API (`deepseek-v4-pro`) |
+| AI | DeepSeek API (`deepseek-v4-flash`) |
 | Payments | Stripe |
 
 ## Quick Start
@@ -180,6 +178,24 @@ We welcome contributions! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) and [
 ## Disclaimer
 
 Data is sourced from SEC EDGAR and may lag quarter-end by up to **45 days**. This software is for **research only** — not investment advice.
+
+## Discoverability
+
+HoldingsKit is optimized for search engines and AI agent discovery:
+
+| Resource | URL |
+|----------|-----|
+| Sitemap | `/sitemap.xml` |
+| Robots | `/robots.txt` |
+| LLMs.txt | `/llms.txt` |
+| Agent Card (A2A) | `/.well-known/agent-card.json` |
+| OpenAPI 3.1 | `/openapi.json` |
+| AI Plugin manifest | `/.well-known/ai-plugin.json` |
+| MCP info | `/.well-known/mcp.json` |
+
+See [DISTRIBUTION.md](./DISTRIBUTION.md) for submission checklists (Google Search Console, Bing, agent directories, Product Hunt, Show HN).
+
+**GitHub topics:** `13f`, `sec-edgar`, `institutional-holdings`, `agent-api`, `mpp`, `openapi`, `cloudflare-workers`, `fintech`, `ai-agents`
 
 ## License
 

@@ -1,13 +1,13 @@
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+import { verifyAdminSecret } from "@/lib/admin/auth";
 import { getCloudflareEnv, getDb } from "@/lib/cloudflare";
 import { institutions } from "@/lib/db/schema";
 import { getRecentQuarterEnds } from "@/lib/sec/client";
 import seedData from "@/data/institutions.seed.json";
 
 export async function POST(request: NextRequest) {
-  const adminSecret = request.headers.get("X-Admin-Secret");
-  if (!adminSecret || adminSecret !== process.env.ADMIN_SECRET) {
+  if (!verifyAdminSecret(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

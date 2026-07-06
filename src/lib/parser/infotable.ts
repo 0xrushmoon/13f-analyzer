@@ -1,4 +1,5 @@
 import { XMLParser } from "fast-xml-parser";
+import { parseSecValueUsd } from "./value-units";
 
 export interface ParsedHolding {
   cusip: string;
@@ -32,7 +33,16 @@ function extractText(value: unknown): string {
   return "";
 }
 
-export function parseInfotableXml(xml: string): ParsedHolding[] {
+export interface ParseInfotableOptions {
+  /** Filing date (YYYY-MM-DD) — determines pre/post 2023 value unit. */
+  filedAt?: string | null;
+}
+
+export function parseInfotableXml(
+  xml: string,
+  options: ParseInfotableOptions = {}
+): ParsedHolding[] {
+  const { filedAt } = options;
   const parser = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: "@_",
@@ -47,7 +57,14 @@ export function parseInfotableXml(xml: string): ParsedHolding[] {
     parsed.infoTable ??
     parsed;
 
-  const table = root?.infoTable ?? root?.InfoTable ?? root;
+  const table =
+    root?.infoTable ??
+    root?.InfoTable ??
+    (root &&
+    typeof root === "object" &&
+    ("cusip" in root || "CUSIP" in root || "nameOfIssuer" in root)
+      ? root
+      : null);
   const entries = normalizeArray(table);
 
   const holdings: ParsedHolding[] = [];
@@ -66,7 +83,10 @@ export function parseInfotableXml(xml: string): ParsedHolding[] {
         (e.shrsOrPrnAmt as Record<string, unknown>)?.SshPrnamt ??
         e.sshPrnamt
     );
-    const valueUsd = parseNumber(e.value ?? e.Value) * 1000;
+    const valueUsd = parseSecValueUsd(
+      parseNumber(e.value ?? e.Value),
+      filedAt
+    );
     const putCall =
       extractText(e.putCall ?? e.PutCall) || undefined;
 

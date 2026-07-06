@@ -20,7 +20,9 @@ export interface SecSubmissions {
   };
 }
 
-const RATE_LIMIT_MS = 100;
+const RATE_LIMIT_MS = 150;
+const MAX_RETRIES = 4;
+const RETRYABLE_STATUS = new Set([403, 429, 500, 502, 503, 504]);
 
 let lastRequestTime = 0;
 
@@ -31,6 +33,10 @@ async function rateLimit() {
     await new Promise((r) => setTimeout(r, RATE_LIMIT_MS - elapsed));
   }
   lastRequestTime = Date.now();
+}
+
+function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
 }
 
 function getUserAgent(): string {
@@ -57,17 +63,32 @@ export class SecEdgarClient {
   }
 
   private async fetch(url: string): Promise<Response> {
-    await rateLimit();
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": this.userAgent,
-        Accept: "application/json, application/xml, text/xml, */*",
-      },
-    });
-    if (!response.ok) {
-      throw new Error(`SEC request failed: ${response.status} ${url}`);
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      await rateLimit();
+      const response = await fetch(url, {
+        headers: {
+          "User-Agent": this.userAgent,
+          Accept: "application/json, application/xml, text/xml, */*",
+          "Accept-Encoding": "gzip, deflate",
+        },
+      });
+
+      if (response.ok) {
+        return response;
+      }
+
+      if (RETRYABLE_STATUS.has(response.status) && attempt < MAX_RETRIES - 1) {
+        await sleep(400 * 2 ** attempt);
+        continue;
+      }
+
+      lastError = new Error(`SEC request failed: ${response.status} ${url}`);
+      break;
     }
-    return response;
+
+    throw lastError ?? new Error(`SEC request failed: ${url}`);
   }
 
   async getSubmissions(cik: string): Promise<SecSubmissions> {
@@ -106,6 +127,91 @@ export class SecEdgarClient {
     return filings;
   }
 
+  private isIndexArtifact(name: string): boolean {
+    const lower = name.toLowerCase();
+    return (
+      lower.includes("-index") ||
+      lower.endsWith(".txt") ||
+      lower.endsWith(".html") ||
+      lower === "primary_doc.xml"
+    );
+  }
+
+  private looksLikeInfotableFilename(name: string): boolean {
+    const lower = name.toLowerCase();
+    return (
+      lower.endsWith(".xml") &&
+      (lower.includes("infotable") ||
+        lower.includes("informationtable") ||
+        lower.includes("form13f") ||
+        /^13f[_-]/.test(lower) ||
+        /[_-]13f[_-]/.test(lower))
+    );
+  }
+
+  private findInfotableFromIndex(
+    items: Array<{ name: string; type?: string; description?: string }>
+  ): string | null {
+    const byName = items.find((item) =>
+      this.looksLikeInfotableFilename(item.name)
+    );
+    if (byName) return byName.name;
+
+    const byType = items.find((item) => {
+      const type = (item.type ?? "").toUpperCase();
+      const desc = (item.description ?? "").toUpperCase();
+      return (
+        item.name.toLowerCase().endsWith(".xml") &&
+        (type.includes("INFORMATION TABLE") ||
+          desc.includes("INFORMATION TABLE"))
+      );
+    });
+    if (byType) return byType.name;
+
+    const xmlCandidates = items.filter(
+      (item) =>
+        item.name.toLowerCase().endsWith(".xml") &&
+        !this.isIndexArtifact(item.name)
+    );
+    if (xmlCandidates.length === 1) return xmlCandidates[0].name;
+
+    return null;
+  }
+
+  private async parseInfotableFilenameFromSubmission(
+    baseUrl: string,
+    accessionNumber: string
+  ): Promise<string | null> {
+    try {
+      const response = await this.fetch(`${baseUrl}/${accessionNumber}.txt`);
+      const text = await response.text();
+      const matches = [
+        ...text.matchAll(
+          /<TYPE>\s*INFORMATION\s+TABLE[\s\S]*?<FILENAME>\s*([^\s<]+)/gi
+        ),
+      ];
+      return matches.at(-1)?.[1]?.trim() ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  private async probeXmlForInfotable(
+    baseUrl: string,
+    filenames: string[]
+  ): Promise<string | null> {
+    for (const name of filenames) {
+      try {
+        const response = await this.fetch(`${baseUrl}/${name}`);
+        const head = (await response.text()).slice(0, 4000);
+        if (/informationTable|infoTable/i.test(head)) return name;
+      } catch {
+        continue;
+      }
+    }
+    return null;
+  }
+
   async downloadInfotable(
     cik: string,
     accessionNumber: string
@@ -114,24 +220,45 @@ export class SecEdgarClient {
     const accessionPath = accessionNumber.replace(/-/g, "");
     const baseUrl = `https://www.sec.gov/Archives/edgar/data/${paddedCik}/${accessionPath}`;
 
-    const indexUrl = `${baseUrl}/index.json`;
+    const fromSubmission = await this.parseInfotableFilenameFromSubmission(
+      baseUrl,
+      accessionNumber
+    );
+    if (fromSubmission) {
+      const xmlResponse = await this.fetch(`${baseUrl}/${fromSubmission}`);
+      return xmlResponse.text();
+    }
+
+    let items: Array<{ name: string; type?: string; description?: string }> =
+      [];
     try {
-      const indexResponse = await this.fetch(indexUrl);
+      const indexResponse = await this.fetch(`${baseUrl}/index.json`);
       const indexData = (await indexResponse.json()) as {
-        directory: { item: Array<{ name: string }> };
+        directory: {
+          item: Array<{ name: string; type?: string; description?: string }>;
+        };
       };
-      const items = indexData.directory?.item ?? [];
-      const infotableFile = items.find(
-        (item) =>
-          item.name.toLowerCase().includes("infotable") &&
-          item.name.endsWith(".xml")
-      );
-      if (infotableFile) {
-        const xmlResponse = await this.fetch(`${baseUrl}/${infotableFile.name}`);
+      items = indexData.directory?.item ?? [];
+      const fromIndex = this.findInfotableFromIndex(items);
+      if (fromIndex) {
+        const xmlResponse = await this.fetch(`${baseUrl}/${fromIndex}`);
         return xmlResponse.text();
       }
     } catch {
-      // fall through to common filenames
+      // fall through to content probing
+    }
+
+    const xmlCandidates = items
+      .filter(
+        (item) =>
+          item.name.toLowerCase().endsWith(".xml") &&
+          !this.isIndexArtifact(item.name)
+      )
+      .map((item) => item.name);
+    const probed = await this.probeXmlForInfotable(baseUrl, xmlCandidates);
+    if (probed) {
+      const xmlResponse = await this.fetch(`${baseUrl}/${probed}`);
+      return xmlResponse.text();
     }
 
     const candidates = [

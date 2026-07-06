@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authenticateApiRequest } from "@/lib/api/auth-middleware";
+import { withAgentAccess } from "@/lib/api/agent-access";
 import {
   getInstitutionByCik,
   getFilingByPeriod,
@@ -13,51 +13,47 @@ import {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ cik: string }> }
+  { params }: { params: Promise<{ cik: string }> },
 ) {
-  const auth = await authenticateApiRequest(request);
-  if ("error" in auth) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+  return withAgentAccess(request, "query", async ({ db }) => {
+    const { cik } = await params;
+    const periodParam = request.nextUrl.searchParams.get("period");
 
-  const { cik } = await params;
-  const periodParam = request.nextUrl.searchParams.get("period");
+    const institution = await getInstitutionByCik(db, cik);
+    if (!institution) {
+      return NextResponse.json({ error: "Institution not found" }, { status: 404 });
+    }
 
-  const institution = await getInstitutionByCik(auth.db, cik);
-  if (!institution) {
-    return NextResponse.json({ error: "机构未找到" }, { status: 404 });
-  }
+    let filing;
+    if (periodParam) {
+      const periodEnd = quarterLabelToPeriodEnd(periodParam) ?? periodParam;
+      filing = await getFilingByPeriod(db, institution.id, periodEnd);
+    } else {
+      filing = await getLatestFiling(db, institution.id);
+    }
 
-  let filing;
-  if (periodParam) {
-    const periodEnd =
-      quarterLabelToPeriodEnd(periodParam) ?? periodParam;
-    filing = await getFilingByPeriod(auth.db, institution.id, periodEnd);
-  } else {
-    filing = await getLatestFiling(auth.db, institution.id);
-  }
+    if (!filing) {
+      return NextResponse.json({ error: "No holdings data" }, { status: 404 });
+    }
 
-  if (!filing) {
-    return NextResponse.json({ error: "暂无持仓数据" }, { status: 404 });
-  }
+    const holdingsList = await getHoldingsByFiling(db, filing.id);
 
-  const holdingsList = await getHoldingsByFiling(auth.db, filing.id);
-
-  return NextResponse.json({
-    institution: {
-      cik: institution.cik,
-      name: institution.name,
-    },
-    period: periodToQuarterLabel(filing.periodEnd),
-    period_end: filing.periodEnd,
-    filed_at: filing.filedAt,
-    holdings: holdingsList.map((h) => ({
-      cusip: h.cusip,
-      issuer_name: h.issuerName,
-      ticker: h.ticker,
-      shares: h.shares,
-      value_usd: h.valueUsd,
-      put_call: h.putCall,
-    })),
+    return NextResponse.json({
+      institution: {
+        cik: institution.cik,
+        name: institution.name,
+      },
+      period: periodToQuarterLabel(filing.periodEnd),
+      period_end: filing.periodEnd,
+      filed_at: filing.filedAt,
+      holdings: holdingsList.map((h) => ({
+        cusip: h.cusip,
+        issuer_name: h.issuerName,
+        ticker: h.ticker,
+        shares: h.shares,
+        value_usd: h.valueUsd,
+        put_call: h.putCall,
+      })),
+    });
   });
 }

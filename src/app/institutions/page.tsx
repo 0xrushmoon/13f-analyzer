@@ -3,15 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { formatUsd } from "@/lib/utils";
+import { useLocale } from "@/contexts/locale-context";
 
 interface Institution {
   id: number;
@@ -27,6 +20,9 @@ interface Institution {
 }
 
 export default function InstitutionsPage() {
+  const { dict } = useLocale();
+  const t = dict.institutions;
+
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -44,62 +40,79 @@ export default function InstitutionsPage() {
   }, [search]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">机构浏览</h1>
-        <p className="text-muted-foreground">
-          精选 100+ 顶级投资机构，数据来自 SEC 13F-HR 申报
-        </p>
+    <div className="container mx-auto px-4 py-6">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">{t.title}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t.subtitle}</p>
+        </div>
+        <Input
+          placeholder={t.searchPlaceholder}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-xs h-9 text-sm"
+        />
       </div>
 
-      <Input
-        placeholder="搜索机构名称、CIK 或代码..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="max-w-md mb-8"
-      />
+      {!loading && institutions.length > 0 && institutions.every((i) => !i.summary) && (
+        <div className="alert-banner">
+          {t.backfillHint.replace("{count}", String(institutions.length))}{" "}
+          <Link href="/admin" className="underline font-medium text-foreground">
+            {t.adminLink}
+          </Link>
+        </div>
+      )}
 
       {loading ? (
-        <p className="text-muted-foreground">加载中...</p>
+        <p className="text-muted-foreground text-sm py-8">{t.loading}</p>
       ) : institutions.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            暂无机构数据。请先运行数据回填（POST /api/admin/backfill 或 ingestion worker）。
-          </CardContent>
-        </Card>
+        <div className="panel py-12 text-center text-muted-foreground text-sm">
+          {t.emptyState}
+        </div>
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {institutions.map((inst) => (
-            <Link key={inst.id} href={`/institutions/${inst.cik}`}>
-              <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="text-lg">{inst.name}</CardTitle>
-                    <Badge variant="secondary">{inst.tier}</Badge>
-                  </div>
-                  <CardDescription>CIK: {inst.cik}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {inst.summary ? (
-                    <div className="space-y-1 text-sm">
-                      <p>
-                        持仓总值:{" "}
-                        <span className="font-medium">
-                          {formatUsd(inst.summary.totalValue)}
+        <div className="panel overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>{t.colName}</th>
+                  <th>CIK</th>
+                  <th className="text-right">{t.totalValue}</th>
+                  <th className="text-right">{t.holdingsCount}</th>
+                  <th className="text-right">{t.asOf}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {institutions.map((inst) => (
+                  <tr key={inst.id}>
+                    <td>
+                      <Link
+                        href={`/institutions/${inst.cik}`}
+                        className="font-medium hover:text-primary transition-colors"
+                      >
+                        {inst.name}
+                      </Link>
+                      {inst.ticker && (
+                        <span className="ml-2 text-xs text-muted-foreground num">
+                          {inst.ticker}
                         </span>
-                      </p>
-                      <p className="text-muted-foreground">
-                        {inst.summary.holdingsCount} 个持仓 · 截至{" "}
-                        {inst.summary.periodEnd}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">暂无持仓数据</p>
-                  )}
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                      )}
+                    </td>
+                    <td className="num text-xs text-muted-foreground">{inst.cik}</td>
+                    <td className="num text-right font-medium">
+                      {inst.summary ? formatUsd(inst.summary.totalValue) : "—"}
+                    </td>
+                    <td className="num text-right text-muted-foreground">
+                      {inst.summary?.holdingsCount ?? "—"}
+                    </td>
+                    <td className="num text-right text-xs text-muted-foreground">
+                      {inst.summary?.periodEnd ?? "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

@@ -40,7 +40,7 @@ async function handleQueueBatch(
 
   for (const message of batch.messages) {
     try {
-      await processFilingIngest(db, env.R2, secClient, message.body);
+      await processFilingIngest(db, env.DB, env.R2, secClient, message.body);
       message.ack();
     } catch (error) {
       console.error("Ingest failed:", error);
@@ -126,6 +126,14 @@ export default {
     controller: ScheduledController,
     env: Env
   ): Promise<void> {
-    await enqueueDailySync(env);
+    const cron = controller.cron ?? "";
+    const isQuarterlyBackfill =
+      cron === "0 6 15 1,4,7,10 *" || cron === "0 6 30 1,4,7,10 *";
+
+    if (isQuarterlyBackfill) {
+      await enqueueBackfill(env);
+    } else {
+      await enqueueDailySync(env);
+    }
   },
 };

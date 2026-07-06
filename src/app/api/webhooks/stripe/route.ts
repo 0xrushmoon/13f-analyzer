@@ -61,6 +61,27 @@ export async function POST(request: NextRequest) {
       }
       break;
     }
+    case "invoice.paid": {
+      const invoice = event.data.object;
+      const subscriptionId =
+        typeof invoice.subscription === "string"
+          ? invoice.subscription
+          : invoice.subscription?.id;
+      const userId = invoice.metadata?.userId ?? invoice.subscription_details?.metadata?.userId;
+      if (userId && invoice.customer) {
+        await handleSubscriptionUpdate(db, {
+          userId,
+          customerId: String(invoice.customer),
+          subscriptionId: subscriptionId ?? "",
+          status: "active",
+          plan: "pro",
+          currentPeriodEnd: invoice.lines?.data?.[0]?.period?.end
+            ? new Date(invoice.lines.data[0].period.end * 1000).toISOString()
+            : undefined,
+        });
+      }
+      break;
+    }
   }
 
   return NextResponse.json({ received: true });

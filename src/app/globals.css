@@ -2,50 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hyperliquid-inspired — light default, .dark for terminal mode */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 210 25% 97%;
+    --foreground: 200 25% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 200 25% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --popover-foreground: 200 25% 12%;
+    --primary: 172 55% 36%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 22% 93%;
+    --secondary-foreground: 200 25% 12%;
+    --muted: 210 22% 93%;
+    --muted-foreground: 200 10% 42%;
+    --accent: 210 22% 90%;
+    --accent-foreground: 200 25% 12%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 22% 86%;
+    --input: 214 22% 86%;
+    --ring: 172 55% 36%;
+    --radius: 0.25rem;
+    --header: 0 0% 100%;
+    --header-foreground: 200 25% 12%;
+    --header-muted: 200 10% 42%;
+    --header-accent: 210 22% 94%;
+    --market-up: 172 55% 36%;
+    --market-down: 0 72% 51%;
+    --panel-raised: 210 25% 99%;
+    --chart-axis: 200 10% 42%;
+    --chart-grid: 214 22% 86%;
+    color-scheme: light;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --background: 195 28% 10%;
+    --foreground: 195 8% 78%;
+    --card: 216 15% 12%;
+    --card-foreground: 195 8% 78%;
+    --popover: 216 15% 12%;
+    --popover-foreground: 195 8% 78%;
+    --primary: 172 48% 54%;
+    --primary-foreground: 195 28% 8%;
+    --secondary: 216 12% 16%;
+    --secondary-foreground: 195 8% 78%;
+    --muted: 216 12% 14%;
+    --muted-foreground: 200 6% 52%;
+    --accent: 216 12% 18%;
+    --accent-foreground: 195 8% 88%;
+    --destructive: 2 68% 62%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 216 14% 20%;
+    --input: 216 14% 20%;
+    --ring: 172 48% 54%;
+    --header: 195 28% 8%;
+    --header-foreground: 195 8% 85%;
+    --header-muted: 200 6% 52%;
+    --header-accent: 216 12% 16%;
+    --market-up: 172 48% 54%;
+    --market-down: 2 68% 62%;
+    --panel-raised: 220 10% 15%;
+    --chart-axis: 200 6% 52%;
+    --chart-grid: 216 14% 22%;
+    color-scheme: dark;
   }
 }
 
@@ -54,6 +75,133 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased text-sm transition-colors duration-200;
+  }
+}
+
+@layer components {
+  .site-header {
+    @apply sticky top-0 z-50 border-b border-border bg-[hsl(var(--header))] text-[hsl(var(--header-foreground))];
+  }
+  .header-btn {
+    @apply text-[hsl(var(--header-muted))] hover:text-[hsl(var(--header-foreground))] hover:bg-[hsl(var(--header-accent))];
+  }
+  .nav-link {
+    @apply px-3 py-1.5 text-xs rounded-sm transition-colors;
+    color: hsl(var(--header-muted));
+  }
+  .nav-link:hover {
+    color: hsl(var(--header-foreground));
+    background-color: hsl(var(--header-accent));
+  }
+  .nav-link-active {
+    @apply text-primary;
+    background-color: hsl(var(--header-accent) / 0.6);
+  }
+  .nav-link-active:hover {
+    @apply text-primary;
+  }
+  .terminal-grid {
+    @apply grid gap-px bg-border border border-border;
+  }
+  .terminal-cell {
+    @apply bg-card p-4;
+  }
+  .data-table {
+    @apply w-full text-xs border-collapse;
+  }
+  .data-table thead tr {
+    @apply border-b border-border bg-muted/80;
+  }
+  .data-table th {
+    @apply px-3 py-2 text-left text-[10px] font-medium uppercase tracking-wider text-muted-foreground;
+  }
+  .data-table td {
+    @apply px-3 py-2 border-b border-border/50;
+  }
+  .data-table tbody tr:nth-child(even) {
+    @apply bg-muted/30;
+  }
+  .data-table tbody tr:hover {
+    @apply bg-accent/50;
+  }
+  .num {
+    @apply font-mono tabular-nums tracking-tight;
+  }
+  .stat-value {
+    @apply font-mono text-xl font-medium tabular-nums tracking-tight text-foreground;
+  }
+  .panel {
+    @apply border border-border bg-card;
+  }
+  .panel-raised {
+    @apply border border-border bg-[hsl(var(--panel-raised))];
+  }
+  .panel-header {
+    @apply border-b border-border px-4 py-2.5 text-xs uppercase tracking-wider text-muted-foreground;
+  }
+  .panel-body {
+    @apply p-4;
+  }
+  .text-market-up {
+    color: hsl(var(--market-up));
+  }
+  .text-market-down {
+    color: hsl(var(--market-down));
+  }
+  .alert-banner {
+    @apply mb-4 border px-4 py-3 text-sm text-muted-foreground;
+    border-color: hsl(var(--primary) / 0.35);
+    background-color: hsl(var(--primary) / 0.08);
+  }
+  .btn-terminal {
+    @apply inline-flex items-center justify-center rounded-sm px-3 py-1.5 text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors;
+  }
+  .btn-terminal-ghost {
+    @apply inline-flex items-center justify-center rounded-sm px-3 py-1.5 text-xs font-medium border border-border bg-transparent text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-colors;
+  }
+  .page-section-muted {
+    @apply border-t border-border bg-muted/40;
+  }
+}
+
+/* Hyperliquid-style Recharts */
+@layer components {
+  .hl-chart .recharts-cartesian-grid-horizontal line {
+    stroke: hsl(var(--chart-grid));
+  }
+  .hl-chart .recharts-cartesian-axis-tick text {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 10px;
+    fill: hsl(var(--chart-axis));
+  }
+  .hl-chart .recharts-active-dot circle {
+    fill: hsl(var(--primary));
+    stroke: hsl(var(--background));
+    stroke-width: 2;
+  }
+  .hl-chart-tooltip {
+    @apply border border-border bg-card px-3 py-2 rounded-sm shadow-none min-w-[140px];
+  }
+  .hl-chart-tooltip-label {
+    @apply text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5 pb-1 border-b border-border/60;
+  }
+  .code-block {
+    @apply block w-full bg-muted/40 border border-border px-3 py-2.5 text-[11px] leading-relaxed num overflow-x-auto rounded-sm text-foreground;
+  }
+  .page-eyebrow {
+    @apply text-[10px] uppercase tracking-[0.2em] text-primary mb-2;
+  }
+  .page-title {
+    @apply text-xl md:text-2xl font-medium tracking-tight text-foreground;
+  }
+  .page-subtitle {
+    @apply text-sm text-muted-foreground mt-2 max-w-2xl leading-relaxed;
+  }
+  .method-get {
+    @apply inline-block px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary border border-primary/40 bg-primary/10 rounded-sm;
+  }
+  .method-post {
+    @apply inline-block px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-600 border border-amber-500/40 bg-amber-500/10 rounded-sm dark:text-amber-400;
   }
 }

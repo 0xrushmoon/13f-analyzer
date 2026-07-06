@@ -1,51 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authenticateApiRequest } from "@/lib/api/auth-middleware";
-import {
-  getInstitutionByCik,
-  getHoldingChanges,
-} from "@/lib/db/queries";
+import { withAgentAccess } from "@/lib/api/agent-access";
+import { getInstitutionByCik, getHoldingChanges } from "@/lib/db/queries";
 import { quarterLabelToPeriodEnd } from "@/lib/sec/client";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ cik: string }> }
+  { params }: { params: Promise<{ cik: string }> },
 ) {
-  const auth = await authenticateApiRequest(request);
-  if ("error" in auth) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+  return withAgentAccess(request, "query", async ({ db }) => {
+    const { cik } = await params;
+    const periodParam =
+      request.nextUrl.searchParams.get("period") ??
+      request.nextUrl.searchParams.get("to");
 
-  const { cik } = await params;
-  const periodParam =
-    request.nextUrl.searchParams.get("period") ??
-    request.nextUrl.searchParams.get("to");
+    if (!periodParam) {
+      return NextResponse.json(
+        { error: "Missing period or to query parameter" },
+        { status: 400 },
+      );
+    }
 
-  if (!periodParam) {
-    return NextResponse.json(
-      { error: "请提供 period 或 to 参数" },
-      { status: 400 }
-    );
-  }
+    const institution = await getInstitutionByCik(db, cik);
+    if (!institution) {
+      return NextResponse.json({ error: "Institution not found" }, { status: 404 });
+    }
 
-  const institution = await getInstitutionByCik(auth.db, cik);
-  if (!institution) {
-    return NextResponse.json({ error: "机构未找到" }, { status: 404 });
-  }
+    const periodEnd = quarterLabelToPeriodEnd(periodParam) ?? periodParam;
+    const changes = await getHoldingChanges(db, institution.id, periodEnd);
 
-  const periodEnd = quarterLabelToPeriodEnd(periodParam) ?? periodParam;
-  const changes = await getHoldingChanges(auth.db, institution.id, periodEnd);
-
-  return NextResponse.json({
-    institution: { cik: institution.cik, name: institution.name },
-    period: periodParam,
-    changes: changes.map((c) => ({
-      cusip: c.cusip,
-      issuer_name: c.issuerName,
-      change_type: c.changeType,
-      shares_delta: c.sharesDelta,
-      value_delta: c.valueDelta,
-      value_current: c.valueCurrent,
-      value_previous: c.valuePrevious,
-    })),
+    return NextResponse.json({
+      institution: { cik: institution.cik, name: institution.name },
+      period: periodParam,
+      changes: changes.map((c) => ({
+        cusip: c.cusip,
+        issuer_name: c.issuerName,
+        change_type: c.changeType,
+        shares_delta: c.sharesDelta,
+        value_delta: c.valueDelta,
+        value_current: c.valueCurrent,
+        value_previous: c.valuePrevious,
+      })),
+    });
   });
 }

@@ -116,7 +116,7 @@ export async function handleSubscriptionUpdate(
 
   await db
     .update(users)
-    .set({ plan: data.plan, updatedAt: new Date().toISOString() })
+    .set({ plan: data.plan, updatedAt: new Date() })
     .where(eq(users.id, data.userId));
 }
 
@@ -171,7 +171,7 @@ export async function incrementAiUsage(db: Database, userId: string) {
     .update(users)
     .set({
       aiUsageThisMonth: user.aiUsageThisMonth + 1,
-      updatedAt: new Date().toISOString(),
+      updatedAt: new Date(),
     })
     .where(eq(users.id, userId));
 }

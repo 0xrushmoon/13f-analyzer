@@ -1,6 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "13f-ingestion",
+  "name": "holdingskit-ingestion",
+  "account_id": "51f97220012f6789ddb53f237d86b13c",
+  "workers_dev": true,
   "compatibility_date": "2026-07-02",
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/workers/ingestion.ts",
@@ -15,7 +17,7 @@
   "r2_buckets": [
     {
       "binding": "R2",
-      "bucket_name": "13f-raw"
+      "bucket_name": "holdingskit-raw"
     }
   ],
   "queues": {
@@ -28,12 +30,16 @@
     "consumers": [
       {
         "queue": "13f-ingest",
-        "max_batch_size": 5,
-        "max_retries": 3
+        "max_batch_size": 1,
+        "max_retries": 10,
+        "max_batch_timeout": 60
       }
     ]
   },
   "triggers": {
     "crons": ["0 6 * * *", "0 6 15 1,4,7,10 *", "0 6 30 1,4,7,10 *"]
-  }
+  },
+  "routes": [
+    { "pattern": "ingest.oktangle.com", "custom_domain": true }
+  ]
 }

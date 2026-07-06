@@ -81,6 +81,42 @@ export async function getHoldingsByFiling(db: Database, filingId: number) {
     .orderBy(desc(holdings.valueUsd));
 }
 
+export async function getHoldingById(db: Database, holdingId: number) {
+  const [holding] = await db
+    .select()
+    .from(holdings)
+    .where(eq(holdings.id, holdingId))
+    .limit(1);
+  return holding ?? null;
+}
+
+export async function getFilingByAccession(
+  db: Database,
+  institutionId: number,
+  accessionNumber: string
+) {
+  const [filing] = await db
+    .select()
+    .from(filings)
+    .where(
+      and(
+        eq(filings.institutionId, institutionId),
+        eq(filings.accessionNumber, accessionNumber)
+      )
+    )
+    .limit(1);
+  return filing ?? null;
+}
+
+export async function getFilingById(db: Database, filingId: number) {
+  const [filing] = await db
+    .select()
+    .from(filings)
+    .where(eq(filings.id, filingId))
+    .limit(1);
+  return filing ?? null;
+}
+
 export async function getFilingByPeriod(
   db: Database,
   institutionId: number,

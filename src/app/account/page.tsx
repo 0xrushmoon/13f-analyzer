@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,11 +12,54 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLocale } from "@/contexts/locale-context";
 
 export default function AccountPage() {
+  const { dict } = useLocale();
+  const t = dict.account;
+
   const [apiKeyName, setApiKeyName] = useState("");
   const [newApiKey, setNewApiKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [plan, setPlan] = useState("free");
+  const [usage, setUsage] = useState({ apiCalls: 0, aiAnalyses: 0 });
+  const [keys, setKeys] = useState<
+    Array<{ id: number; name: string; keyPrefix: string; lastUsedAt: string | null }>
+  >([]);
+
+  const loadAccount = async () => {
+    const [usageRes, keysRes] = await Promise.all([
+      fetch("/api/account/usage"),
+      fetch("/api/account/api-keys"),
+    ]);
+    if (usageRes.ok) {
+      const data = (await usageRes.json()) as {
+        plan?: string;
+        apiCalls?: number;
+        aiAnalyses?: number;
+      };
+      setPlan(data.plan ?? "free");
+      setUsage({
+        apiCalls: data.apiCalls ?? 0,
+        aiAnalyses: data.aiAnalyses ?? 0,
+      });
+    }
+    if (keysRes.ok) {
+      const data = (await keysRes.json()) as {
+        keys?: Array<{
+          id: number;
+          name: string;
+          keyPrefix: string;
+          lastUsedAt: string | null;
+        }>;
+      };
+      setKeys(data.keys ?? []);
+    }
+  };
+
+  useEffect(() => {
+    void loadAccount();
+  }, []);
 
   const createApiKey = async () => {
     if (!apiKeyName.trim()) return;
@@ -31,6 +74,7 @@ export default function AccountPage() {
       if (data.key) {
         setNewApiKey(data.key);
         setApiKeyName("");
+        await loadAccount();
       }
     } finally {
       setLoading(false);
@@ -45,26 +89,29 @@ export default function AccountPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-8">账户中心</h1>
+      <h1 className="text-3xl font-bold mb-8">{t.title}</h1>
 
       <Tabs defaultValue="subscription">
         <TabsList>
-          <TabsTrigger value="subscription">订阅管理</TabsTrigger>
-          <TabsTrigger value="api-keys">API 密钥</TabsTrigger>
-          <TabsTrigger value="usage">用量统计</TabsTrigger>
+          <TabsTrigger value="subscription">{t.subscriptionTab}</TabsTrigger>
+          <TabsTrigger value="api-keys">{t.apiKeysTab}</TabsTrigger>
+          <TabsTrigger value="usage">{t.usageTab}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="subscription">
           <Card>
             <CardHeader>
-              <CardTitle>当前套餐</CardTitle>
-              <CardDescription>管理您的订阅计划</CardDescription>
+              <CardTitle>{t.currentPlan}</CardTitle>
+              <CardDescription>{t.subscriptionDesc}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm">
-                当前计划: <strong>免费版</strong>
+                {t.currentPlanLabel}{" "}
+                <strong>{plan === "pro" ? t.proPlan : t.freePlan}</strong>
               </p>
-              <Button onClick={startCheckout}>升级至专业版 ($19/月)</Button>
+              {plan !== "pro" && (
+                <Button onClick={startCheckout}>{t.upgradeToPro}</Button>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -72,20 +119,18 @@ export default function AccountPage() {
         <TabsContent value="api-keys">
           <Card>
             <CardHeader>
-              <CardTitle>API 密钥</CardTitle>
-              <CardDescription>
-                用于 Agent REST API 认证，格式: Authorization: Bearer sk-13f-xxx
-              </CardDescription>
+              <CardTitle>{t.apiKeysTitle}</CardTitle>
+              <CardDescription>{t.apiKeysDesc}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <Label htmlFor="key-name">密钥名称</Label>
+                  <Label htmlFor="key-name">{t.keyName}</Label>
                   <Input
                     id="key-name"
                     value={apiKeyName}
                     onChange={(e) => setApiKeyName(e.target.value)}
-                    placeholder="我的应用"
+                    placeholder={t.keyNamePlaceholder}
                   />
                 </div>
                 <Button
@@ -93,16 +138,34 @@ export default function AccountPage() {
                   onClick={createApiKey}
                   disabled={loading}
                 >
-                  生成密钥
+                  {t.generateKey}
                 </Button>
               </div>
               {newApiKey && (
                 <div className="p-4 bg-muted rounded-lg">
-                  <p className="text-sm font-medium mb-1">
-                    请立即保存，此密钥仅显示一次：
-                  </p>
+                  <p className="text-sm font-medium mb-1">{t.saveKeyWarning}</p>
                   <code className="text-xs break-all">{newApiKey}</code>
                 </div>
+              )}
+              {keys.length > 0 && (
+                <ul className="space-y-2 text-sm">
+                  {keys.map((k) => (
+                    <li
+                      key={k.id}
+                      className="flex justify-between border-b border-border pb-2"
+                    >
+                      <span>
+                        {k.name}{" "}
+                        <code className="text-xs text-muted-foreground">
+                          {k.keyPrefix}…
+                        </code>
+                      </span>
+                      <span className="text-muted-foreground text-xs">
+                        {k.lastUsedAt ? k.lastUsedAt.slice(0, 10) : "—"}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               )}
             </CardContent>
           </Card>
@@ -111,18 +174,18 @@ export default function AccountPage() {
         <TabsContent value="usage">
           <Card>
             <CardHeader>
-              <CardTitle>用量统计</CardTitle>
-              <CardDescription>本月 API 与 AI 使用情况</CardDescription>
+              <CardTitle>{t.usageTitle}</CardTitle>
+              <CardDescription>{t.usageDesc}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4 text-center">
                 <div className="p-4 bg-muted rounded-lg">
-                  <p className="text-2xl font-bold">0</p>
-                  <p className="text-sm text-muted-foreground">API 调用</p>
+                  <p className="text-2xl font-bold num">{usage.apiCalls}</p>
+                  <p className="text-sm text-muted-foreground">{t.apiCalls}</p>
                 </div>
                 <div className="p-4 bg-muted rounded-lg">
-                  <p className="text-2xl font-bold">0</p>
-                  <p className="text-sm text-muted-foreground">AI 分析次数</p>
+                  <p className="text-2xl font-bold num">{usage.aiAnalyses}</p>
+                  <p className="text-sm text-muted-foreground">{t.aiAnalyses}</p>
                 </div>
               </div>
             </CardContent>

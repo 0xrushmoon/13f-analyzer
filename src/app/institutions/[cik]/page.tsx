@@ -1,16 +1,13 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { cookies } from "next/headers";
 import { Button } from "@/components/ui/button";
 import { HoldingsTable } from "@/components/holdings/holdings-table";
 import { TopHoldingsChart } from "@/components/holdings/top-holdings-chart";
+import { QuarterTrendChart } from "@/components/holdings/quarter-trend-chart";
 import { formatUsd } from "@/lib/utils";
 import { getDb } from "@/lib/cloudflare";
+import { getDictionary, resolveLocale } from "@/lib/i18n";
 import {
   getInstitutionByCik,
   getFilingsByInstitution,
@@ -24,14 +21,17 @@ export default async function InstitutionDetailPage({
   params: Promise<{ cik: string }>;
 }) {
   const { cik } = await params;
+  const cookieStore = await cookies();
+  const dict = getDictionary(resolveLocale(cookieStore.get("locale")?.value));
+  const t = dict.institutionDetail;
+  const { charts } = dict;
+
   const db = await getDb();
 
   if (!db) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <p className="text-muted-foreground">
-          数据库未连接。本地开发请配置 Cloudflare D1 绑定。
-        </p>
+        <p className="text-muted-foreground">{t.dbNotConnected}</p>
       </div>
     );
   }
@@ -46,105 +46,135 @@ export default async function InstitutionDetailPage({
     : [];
   const totalValue = holdingsList.reduce((s, h) => s + h.valueUsd, 0);
 
+  const recentFilings = filings.slice(0, 4).reverse();
+  const quarterHoldings = await Promise.all(
+    recentFilings.map(async (f) => ({
+      period: f.periodEnd,
+      holdings: (await getHoldingsByFiling(db, f.id)).map((h) => ({
+        cusip: h.cusip,
+        issuerName: h.issuerName,
+        valueUsd: h.valueUsd,
+      })),
+    }))
+  );
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-start justify-between mb-8">
+    <div className="container mx-auto px-4 py-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold">{institution.name}</h1>
-          <p className="text-muted-foreground mt-1">
-            CIK: {institution.cik}
+          <h1 className="text-xl font-semibold tracking-tight">{institution.name}</h1>
+          <p className="text-sm text-muted-foreground mt-1 num">
+            CIK {institution.cik}
             {institution.ticker && ` · ${institution.ticker}`}
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link href={`/holdings?cik=${institution.cik}`}>季度对比</Link>
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/holdings?cik=${institution.cik}`}>
+              {dict.holdingsCompare.title}
+            </Link>
           </Button>
-          <Button asChild>
-            <Link href={`/analyze?cik=${institution.cik}`}>AI 分析</Link>
+          <Button size="sm" asChild>
+            <Link href={`/analyze?cik=${institution.cik}`}>{t.aiAnalyze}</Link>
           </Button>
         </div>
       </div>
 
-      {latestFiling && (
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                持仓总值
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{formatUsd(totalValue)}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                持仓数量
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{holdingsList.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                报告期
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{latestFiling.periodEnd}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                申报日期: {latestFiling.filedAt ?? "未知"}
-              </p>
-            </CardContent>
-          </Card>
+      {latestFiling ? (
+        <div className="grid grid-cols-3 gap-px bg-border border border-border mb-6">
+          <div className="bg-card px-4 py-3">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">{t.totalValue}</p>
+            <p className="stat-value mt-1">{formatUsd(totalValue)}</p>
+          </div>
+          <div className="bg-card px-4 py-3">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">{t.holdingsCount}</p>
+            <p className="stat-value mt-1">{holdingsList.length}</p>
+          </div>
+          <div className="bg-card px-4 py-3">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">{t.reportPeriod}</p>
+            <p className="stat-value mt-1 text-lg">{latestFiling.periodEnd}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {t.filedAt}: {latestFiling.filedAt ?? t.filedAtUnknown}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="panel mb-6 py-12 text-center text-muted-foreground text-sm">
+          {charts.noData}
         </div>
       )}
 
-      <div className="grid lg:grid-cols-2 gap-8 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Top 10 持仓分布</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TopHoldingsChart holdings={holdingsList.slice(0, 10)} />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>历史申报</CardTitle>
-          </CardHeader>
-          <CardContent>
+      <div className="grid lg:grid-cols-2 gap-6 mb-6">
+        {quarterHoldings.length >= 2 && (
+          <div className="panel lg:col-span-2">
+            <div className="panel-header">
+              <h2 className="text-sm font-semibold">{charts.quarterTrend}</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">{charts.quarterTrendDesc}</p>
+            </div>
+            <div className="panel-body">
+              <QuarterTrendChart quarters={quarterHoldings} />
+            </div>
+          </div>
+        )}
+
+        <div className="panel">
+          <div className="panel-header">
+            <h2 className="text-sm font-semibold">{charts.topHoldings}</h2>
+          </div>
+          <div className="panel-body">
+            <TopHoldingsChart
+              holdings={holdingsList.slice(0, 10)}
+              cik={institution.cik}
+            />
+          </div>
+        </div>
+
+        <div className="panel">
+          <div className="panel-header">
+            <h2 className="text-sm font-semibold">{t.filingHistory}</h2>
+          </div>
+          <div className="panel-body p-0">
             {filings.length === 0 ? (
-              <p className="text-muted-foreground text-sm">暂无申报记录</p>
+              <p className="text-muted-foreground text-sm p-4">{charts.noData}</p>
             ) : (
-              <ul className="space-y-2">
-                {filings.map((f) => (
-                  <li
-                    key={f.id}
-                    className="flex justify-between text-sm border-b pb-2"
-                  >
-                    <span>{f.periodEnd}</span>
-                    <span className="text-muted-foreground">{f.filedAt}</span>
-                  </li>
-                ))}
-              </ul>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>{t.reportPeriod}</th>
+                    <th className="text-right">{t.filedAt}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filings.map((f) => (
+                    <tr key={f.id}>
+                      <td>
+                        <Link
+                          href={`/institutions/${institution.cik}/filings/${encodeURIComponent(f.accessionNumber)}`}
+                          className="font-medium hover:text-primary transition-colors num"
+                        >
+                          {f.periodEnd}
+                        </Link>
+                      </td>
+                      <td className="text-right text-muted-foreground text-xs num">
+                        {f.filedAt ?? t.filedAtUnknown}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>全部持仓</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <HoldingsTable holdings={holdingsList} />
-        </CardContent>
-      </Card>
+      <div className="panel">
+        <div className="panel-header">
+          <h2 className="text-sm font-semibold">{t.allHoldings}</h2>
+        </div>
+        <div className="panel-body pt-2">
+          <HoldingsTable holdings={holdingsList} cik={institution.cik} />
+        </div>
+      </div>
     </div>
   );
 }

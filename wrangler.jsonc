@@ -1,6 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "13f-analyzer",
+  "name": "holdingskit-api",
+  "account_id": "51f97220012f6789ddb53f237d86b13c",
+  "workers_dev": true,
   "compatibility_date": "2026-07-02",
   "compatibility_flags": ["nodejs_compat"],
   "main": ".open-next/worker.js",
@@ -14,6 +16,12 @@
       "database_name": "13f-db",
       "database_id": "cf2f4ebf-1417-4edc-9f55-ef3fa31d1262",
       "migrations_dir": "drizzle/migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "holdingskit-raw"
     }
   ],
   "kv_namespaces": [
@@ -31,6 +39,14 @@
     ]
   },
   "vars": {
-    "APP_URL": "https://13f-analyzer.0xrushmoon.workers.dev"
-  }
+    "APP_URL": "https://oktangle.com",
+    "BETTER_AUTH_URL": "https://oktangle.com",
+    "MPP_PRICE_ANALYZE": "0.00001",
+    "MPP_PRICE_QUERY": "0.01"
+  },
+  "routes": [
+    { "pattern": "oktangle.com/*", "zone_name": "oktangle.com" },
+    { "pattern": "www.oktangle.com", "custom_domain": true },
+    { "pattern": "app.oktangle.com", "custom_domain": true }
+  ]
 }

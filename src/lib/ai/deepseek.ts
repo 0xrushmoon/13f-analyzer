@@ -37,16 +37,18 @@ export async function callDeepSeek(
       Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "deepseek-v4-pro",
+      model: "deepseek-v4-flash",
       messages,
-      extra_body: { thinking: { type: "enabled" } },
-      reasoning_effort: "high",
     }),
   });
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`DeepSeek API error: ${response.status} ${text}`);
+    console.error("DeepSeek API error:", response.status, text.slice(0, 500));
+    return {
+      content: `AI 分析服务暂时不可用（${response.status}），请稍后重试。`,
+      tokens: 0,
+    };
   }
 
   const data = (await response.json()) as {

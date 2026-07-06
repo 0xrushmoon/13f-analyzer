@@ -1,67 +1,114 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
-  PieChart,
-  Pie,
+  BarChart,
+  Bar,
   Cell,
   ResponsiveContainer,
   Tooltip,
-  Legend,
 } from "recharts";
 import { formatUsd } from "@/lib/utils";
+import { useLocale } from "@/contexts/locale-context";
+import { truncateName } from "./chart-colors";
+import {
+  HlChartShell,
+  HlGrid,
+  HlLegend,
+  HlTooltip,
+  HlXAxis,
+  HlYAxis,
+  useHlChartTheme,
+} from "./hl-chart";
 
 interface Holding {
+  id?: number;
   issuerName: string;
   valueUsd: number;
 }
 
-const COLORS = [
-  "#2563eb",
-  "#7c3aed",
-  "#db2777",
-  "#ea580c",
-  "#16a34a",
-  "#0891b2",
-  "#4f46e5",
-  "#c026d3",
-  "#d97706",
-  "#059669",
-];
+const TOP_DISPLAY = 12;
 
-export function TopHoldingsChart({ holdings }: { holdings: Holding[] }) {
+export function TopHoldingsChart({
+  holdings,
+  cik,
+}: {
+  holdings: Holding[];
+  cik?: string;
+}) {
+  const router = useRouter();
+  const { dict } = useLocale();
+  const { charts } = dict;
+  const hl = useHlChartTheme();
+
   if (holdings.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm text-center py-8">暂无数据</p>
+      <p className="text-muted-foreground text-xs text-center py-8">
+        {charts.noData}
+      </p>
     );
   }
 
-  const data = holdings.map((h) => ({
-    name:
-      h.issuerName.length > 20
-        ? h.issuerName.slice(0, 20) + "..."
-        : h.issuerName,
+  const total = holdings.reduce((s, h) => s + h.valueUsd, 0);
+  const data = holdings.slice(0, TOP_DISPLAY).map((h, index) => ({
+    name: truncateName(h.issuerName, 20),
     value: h.valueUsd,
+    pct: total > 0 ? (h.valueUsd / total) * 100 : 0,
+    id: h.id,
+    index,
+  }));
+
+  const handleBarClick = (index: number) => {
+    const holding = holdings[index];
+    if (cik && holding?.id) {
+      router.push(`/institutions/${cik}/holdings/${holding.id}`);
+    }
+  };
+
+  const legendItems = data.map((d, i) => ({
+    color: hl.barFill(i, data.length),
+    label: d.name,
+    value: `${d.pct.toFixed(1)}%`,
   }));
 
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <PieChart>
-        <Pie
+    <HlChartShell>
+      <ResponsiveContainer width="100%" height={Math.max(240, data.length * 28)}>
+        <BarChart
           data={data}
-          cx="50%"
-          cy="50%"
-          innerRadius={60}
-          outerRadius={100}
-          paddingAngle={2}
-          dataKey="value"
+          layout="vertical"
+          margin={{ top: 4, right: 12, left: 0, bottom: 4 }}
+          barCategoryGap="20%"
         >
-          {data.map((_, index) => (
-            <Cell key={index} fill={COLORS[index % COLORS.length]} />
-          ))}
-        </Pie>
-        <Tooltip formatter={(value: number) => formatUsd(value)} />
-        <Legend />
-      </PieChart>
-    </ResponsiveContainer>
+          <HlGrid />
+          <HlXAxis
+            type="number"
+            tickFormatter={(v) => formatUsd(v)}
+            domain={[0, "dataMax"]}
+          />
+          <HlYAxis type="category" dataKey="name" width={108} />
+          <Tooltip
+            content={<HlTooltip formatter={(v, name) => [formatUsd(v), name]} />}
+            cursor={{ fill: "hsl(var(--accent) / 0.35)", radius: 0 }}
+          />
+          <Bar
+            dataKey="value"
+            barSize={10}
+            radius={0}
+            className={cik ? "cursor-pointer" : undefined}
+            onClick={(_, index) => handleBarClick(index)}
+          >
+            {data.map((_, index) => (
+              <Cell
+                key={index}
+                fill={hl.barFill(index, data.length)}
+                fillOpacity={hl.barOpacity(index, data.length)}
+              />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+      <HlLegend items={legendItems} />
+    </HlChartShell>
   );
 }

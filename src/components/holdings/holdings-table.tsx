@@ -1,6 +1,11 @@
+"use client";
+
+import Link from "next/link";
 import { formatUsd, formatShares } from "@/lib/utils";
+import { useLocale } from "@/contexts/locale-context";
 
 interface Holding {
+  id: number;
   issuerName: string;
   cusip: string;
   ticker: string | null;
@@ -9,36 +14,48 @@ interface Holding {
   putCall: string | null;
 }
 
-export function HoldingsTable({ holdings }: { holdings: Holding[] }) {
+export function HoldingsTable({
+  holdings,
+  cik,
+}: {
+  holdings: Holding[];
+  cik: string;
+}) {
+  const { dict } = useLocale();
+  const t = dict.holdingsTable;
+
   if (holdings.length === 0) {
-    return <p className="text-muted-foreground text-sm">暂无持仓数据</p>;
+    return <p className="text-muted-foreground text-sm py-6">{t.noData}</p>;
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto -mx-4 sm:mx-0">
+      <table className="data-table min-w-[640px]">
         <thead>
-          <tr className="border-b text-left">
-            <th className="pb-3 pr-4">标的</th>
-            <th className="pb-3 pr-4">CUSIP</th>
-            <th className="pb-3 pr-4 text-right">股数</th>
-            <th className="pb-3 text-right">市值 (USD)</th>
+          <tr>
+            <th>{t.security}</th>
+            <th>{t.cusip}</th>
+            <th className="text-right">{t.shares}</th>
+            <th className="text-right">{t.value}</th>
           </tr>
         </thead>
         <tbody>
           {holdings.map((h) => (
-            <tr key={h.cusip + h.putCall} className="border-b">
-              <td className="py-3 pr-4">
-                <div className="font-medium">{h.issuerName}</div>
-                {h.ticker && (
-                  <div className="text-xs text-muted-foreground">{h.ticker}</div>
-                )}
+            <tr key={h.id}>
+              <td>
+                <Link
+                  href={`/institutions/${cik}/holdings/${h.id}`}
+                  className="block hover:text-primary transition-colors"
+                >
+                  <div className="font-medium">{h.issuerName}</div>
+                  {h.ticker && (
+                    <div className="text-xs text-muted-foreground">{h.ticker}</div>
+                  )}
+                </Link>
               </td>
-              <td className="py-3 pr-4 text-muted-foreground">{h.cusip}</td>
-              <td className="py-3 pr-4 text-right">{formatShares(h.shares)}</td>
-              <td className="py-3 text-right font-medium">
-                {formatUsd(h.valueUsd)}
-              </td>
+              <td className="num text-muted-foreground text-xs">{h.cusip}</td>
+              <td className="num text-right">{formatShares(h.shares)}</td>
+              <td className="num text-right font-medium">{formatUsd(h.valueUsd)}</td>
             </tr>
           ))}
         </tbody>

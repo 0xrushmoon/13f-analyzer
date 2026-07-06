@@ -18,6 +18,13 @@ export function formatUsd(value: number): string {
   return `$${value.toFixed(0)}`;
 }
 
+export function formatPrice(value: number): string {
+  return `$${value.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
 export function formatShares(value: number): string {
   if (value >= 1_000_000) {
     return `${(value / 1_000_000).toFixed(2)}M`;
@@ -31,4 +38,9 @@ export function formatShares(value: number): string {
 export function formatPercent(value: number): string {
   const sign = value > 0 ? "+" : "";
   return `${sign}${value.toFixed(1)}%`;
+}
+
+export function secFilingUrl(cik: string, accessionNumber: string): string {
+  const cikNum = cik.replace(/^0+/, "");
+  return `https://www.sec.gov/cgi-bin/viewer?action=view&cik=${cikNum}&accession_number=${encodeURIComponent(accessionNumber)}&xbrl_type=v`;
 }

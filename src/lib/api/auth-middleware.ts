@@ -1,6 +1,11 @@
 import { NextRequest } from "next/server";
 import { getDb, getCloudflareEnv } from "@/lib/cloudflare";
-import { validateApiKey, checkRateLimit, type RateLimitTier } from "@/lib/billing/api-keys";
+import {
+  validateApiKey,
+  checkRateLimit,
+  type RateLimitTier,
+} from "@/lib/billing/api-keys";
+import { isPaidPlan } from "@/lib/auth/access";
 import { reportApiUsage } from "@/lib/billing/stripe";
 
 export async function authenticateApiRequest(request: NextRequest) {
@@ -18,6 +23,13 @@ export async function authenticateApiRequest(request: NextRequest) {
   const auth = await validateApiKey(db, key);
   if (!auth) {
     return { error: "无效的 API 密钥", status: 401 as const };
+  }
+
+  if (!isPaidPlan(auth.plan)) {
+    return {
+      error: "需要专业版或 API 订阅才能使用此接口",
+      status: 402 as const,
+    };
   }
 
   const env = await getCloudflareEnv();

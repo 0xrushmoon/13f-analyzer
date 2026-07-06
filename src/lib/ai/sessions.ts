@@ -1,10 +1,26 @@
 import { eq } from "drizzle-orm";
 import type { Database } from "@/lib/db";
-import { analysisSessions } from "@/lib/db/schema";
+import { analysisSessions, users } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/ai/deepseek";
+
+export const ANONYMOUS_USER_ID = "anonymous";
 
 export function generateSessionId(): string {
   return crypto.randomUUID();
+}
+
+export async function ensureAnonymousUser(db: Database) {
+  await db
+    .insert(users)
+    .values({
+      id: ANONYMOUS_USER_ID,
+      name: "Anonymous",
+      email: "anonymous@holdingskit.internal",
+      emailVerified: false,
+      plan: "free",
+      aiUsageThisMonth: 0,
+    })
+    .onConflictDoNothing();
 }
 
 export async function createAnalysisSession(
@@ -13,6 +29,10 @@ export async function createAnalysisSession(
   institutionId: number,
   title: string
 ) {
+  if (userId === ANONYMOUS_USER_ID) {
+    await ensureAnonymousUser(db);
+  }
+
   const id = generateSessionId();
   await db.insert(analysisSessions).values({
     id,
