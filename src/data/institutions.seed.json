@@ -1,74 +1,222 @@
 [
-  { "cik": "0001067983", "name": "Berkshire Hathaway Inc", "ticker": "BRK" },
-  { "cik": "0001350694", "name": "Bridgewater Associates LP", "ticker": null },
-  { "cik": "0001037389", "name": "Renaissance Technologies LLC", "ticker": null },
-  { "cik": "0001423053", "name": "Citadel Advisors LLC", "ticker": null },
-  { "cik": "0001167483", "name": "Tiger Global Management LLC", "ticker": null },
-  { "cik": "0001535392", "name": "Coatue Management LLC", "ticker": null },
-  { "cik": "0001649339", "name": "Scion Asset Management LLC", "ticker": null },
-  { "cik": "0001336528", "name": "Pershing Square Capital Management LP", "ticker": null },
-  { "cik": "0001029160", "name": "Soros Fund Management LLC", "ticker": null },
-  { "cik": "0001273087", "name": "Millennium Management LLC", "ticker": null },
-  { "cik": "0001040273", "name": "Third Point LLC", "ticker": null },
-  { "cik": "0001336920", "name": "Elliott Investment Management LP", "ticker": null },
-  { "cik": "0001603466", "name": "Point72 Asset Management LP", "ticker": null },
-  { "cik": "0001061768", "name": "Baupost Group LLC", "ticker": null },
-  { "cik": "0001647251", "name": "ARK Investment Management LLC", "ticker": null },
-  { "cik": "0001418814", "name": "Appaloosa Management LP", "ticker": null },
-  { "cik": "0001079114", "name": "Greenlight Capital Inc", "ticker": null },
-  { "cik": "0001353314", "name": "Lone Pine Capital LLC", "ticker": null },
-  { "cik": "0001517137", "name": "Duquesne Family Office LLC", "ticker": null },
-  { "cik": "0001103804", "name": "Viking Global Investors LP", "ticker": null },
-  { "cik": "0001279715", "name": "Wellington Management Group LLP", "ticker": null },
-  { "cik": "0001364742", "name": "BlackRock Inc", "ticker": "BLK" },
-  { "cik": "0000102909", "name": "Vanguard Group Inc", "ticker": null },
-  { "cik": "0000315066", "name": "Fidelity Management & Research Co LLC", "ticker": null },
-  { "cik": "0001166559", "name": "Goldman Sachs Group Inc", "ticker": "GS" },
-  { "cik": "0000019617", "name": "JPMorgan Chase & Co", "ticker": "JPM" },
-  { "cik": "0000070858", "name": "Bank of America Corp", "ticker": "BAC" },
-  { "cik": "0000831001", "name": "Citigroup Inc", "ticker": "C" },
-  { "cik": "0000073124", "name": "Morgan Stanley", "ticker": "MS" },
-  { "cik": "0001535472", "name": "Two Sigma Investments LP", "ticker": null },
-  { "cik": "0001422849", "name": "DE Shaw & Co LP", "ticker": null },
-  { "cik": "0001009207", "name": "Farallon Capital Management LLC", "ticker": null },
-  { "cik": "0001056831", "name": "ValueAct Capital Management LP", "ticker": null },
-  { "cik": "0001112520", "name": "Icahn Carl C", "ticker": null },
-  { "cik": "0001336545", "name": "Trian Fund Management LP", "ticker": null },
-  { "cik": "0001510387", "name": "Starboard Value LP", "ticker": null },
-  { "cik": "0001599902", "name": "Ancora Advisors LLC", "ticker": null },
-  { "cik": "0001656456", "name": "Appaloosa LP", "ticker": null },
-  { "cik": "0001536411", "name": "Duquesne Capital Management LLC", "ticker": null },
-  { "cik": "0001567892", "name": "Maverick Capital Ltd", "ticker": null },
-  { "cik": "0001100664", "name": "Blackstone Inc", "ticker": "BX" },
-  { "cik": "0001403256", "name": "KKR & Co Inc", "ticker": "KKR" },
-  { "cik": "0001560327", "name": "Apollo Global Management Inc", "ticker": "APO" },
-  { "cik": "0001652044", "name": "Alphabet Inc", "ticker": "GOOGL" },
-  { "cik": "0001326801", "name": "Meta Platforms Inc", "ticker": "META" },
-  { "cik": "0001018724", "name": "Amazon.com Inc", "ticker": "AMZN" },
-  { "cik": "0000789019", "name": "Microsoft Corp", "ticker": "MSFT" },
-  { "cik": "0001045810", "name": "NVIDIA Corp", "ticker": "NVDA" },
-  { "cik": "0001318605", "name": "Tesla Inc", "ticker": "TSLA" },
-  { "cik": "0000320193", "name": "Apple Inc", "ticker": "AAPL" },
-  { "cik": "0001086364", "name": "BlackRock Advisors LLC", "ticker": null },
-  { "cik": "0000902219", "name": "Capital World Investors", "ticker": null },
-  { "cik": "0001085869", "name": "Capital Research Global Investors", "ticker": null },
-  { "cik": "0001214717", "name": "Geode Capital Management LLC", "ticker": null },
-  { "cik": "0001633445", "name": "D1 Capital Partners LP", "ticker": null },
-  { "cik": "0001697748", "name": "Altimeter Capital Management LP", "ticker": null },
-  { "cik": "0001709323", "name": "Hillhouse Capital Advisors Ltd", "ticker": null },
-  { "cik": "0001802994", "name": "Durable Capital Partners LP", "ticker": null },
-  { "cik": "0001835632", "name": "Whale Rock Capital Management LLC", "ticker": null },
-  { "cik": "0001846674", "name": "Alkeon Capital Management LLC", "ticker": null },
-  { "cik": "0001858353", "name": "Gotham Asset Management LLC", "ticker": null },
-  { "cik": "0001867838", "name": "Soroban Capital Partners LP", "ticker": null },
-  { "cik": "0001872371", "name": "TCI Fund Management Ltd", "ticker": null },
-  { "cik": "0001880767", "name": "Dodge & Cox", "ticker": null },
-  { "cik": "0001929389", "name": "Saba Capital Management LP", "ticker": null },
-  { "cik": "0001939366", "name": "ExodusPoint Capital Management LP", "ticker": null },
-  { "cik": "0001948757", "name": "SurgoCap Partners LP", "ticker": null },
-  { "cik": "0001955497", "name": "Lone Pine Capital (Guernsey)", "ticker": null },
-  { "cik": "0001965545", "name": "Matrix Capital Management", "ticker": null },
-  { "cik": "0001973239", "name": "Melvin Capital Management LP", "ticker": null },
-  { "cik": "0001980994", "name": "D1 Capital Partners II", "ticker": null },
-  { "cik": "0001990446", "name": "Altimeter Capital Partners", "ticker": null }
+  {
+    "cik": "0001067983",
+    "name": "Berkshire Hathaway Inc",
+    "ticker": "BRK"
+  },
+  {
+    "cik": "0001350694",
+    "name": "Bridgewater Associates LP",
+    "ticker": null
+  },
+  {
+    "cik": "0001037389",
+    "name": "Renaissance Technologies LLC",
+    "ticker": null
+  },
+  {
+    "cik": "0001423053",
+    "name": "Citadel Advisors LLC",
+    "ticker": null
+  },
+  {
+    "cik": "0001167483",
+    "name": "Tiger Global Management LLC",
+    "ticker": null
+  },
+  {
+    "cik": "0001135730",
+    "name": "Coatue Management LLC",
+    "ticker": null
+  },
+  {
+    "cik": "0001649339",
+    "name": "Scion Asset Management LLC",
+    "ticker": null
+  },
+  {
+    "cik": "0001336528",
+    "name": "Pershing Square Capital Management LP",
+    "ticker": null
+  },
+  {
+    "cik": "0001029160",
+    "name": "Soros Fund Management LLC",
+    "ticker": null
+  },
+  {
+    "cik": "0001791786",
+    "name": "Elliott Investment Management LP",
+    "ticker": null
+  },
+  {
+    "cik": "0001603466",
+    "name": "Point72 Asset Management LP",
+    "ticker": null
+  },
+  {
+    "cik": "0001697748",
+    "name": "ARK Investment Management LLC",
+    "ticker": null
+  },
+  {
+    "cik": "0001656456",
+    "name": "Appaloosa LP",
+    "ticker": null
+  },
+  {
+    "cik": "0001079114",
+    "name": "Greenlight Capital Inc",
+    "ticker": null
+  },
+  {
+    "cik": "0001061165",
+    "name": "Lone Pine Capital LLC",
+    "ticker": null
+  },
+  {
+    "cik": "0001536411",
+    "name": "Duquesne Family Office LLC",
+    "ticker": null
+  },
+  {
+    "cik": "0000902219",
+    "name": "Wellington Management Group LLP",
+    "ticker": null
+  },
+  {
+    "cik": "0001086364",
+    "name": "BlackRock Advisors LLC",
+    "ticker": "BLK"
+  },
+  {
+    "cik": "0000102909",
+    "name": "Vanguard Group Inc",
+    "ticker": null
+  },
+  {
+    "cik": "0000315066",
+    "name": "FMR LLC",
+    "ticker": null
+  },
+  {
+    "cik": "0000070858",
+    "name": "Bank of America Corp",
+    "ticker": "BAC"
+  },
+  {
+    "cik": "0000831001",
+    "name": "Citigroup Inc",
+    "ticker": "C"
+  },
+  {
+    "cik": "0001179392",
+    "name": "Two Sigma Investments LP",
+    "ticker": null
+  },
+  {
+    "cik": "0001009207",
+    "name": "DE Shaw & Co Inc",
+    "ticker": null
+  },
+  {
+    "cik": "0000909661",
+    "name": "Farallon Capital Management LLC",
+    "ticker": null
+  },
+  {
+    "cik": "0000921669",
+    "name": "Icahn Carl C",
+    "ticker": null
+  },
+  {
+    "cik": "0001517137",
+    "name": "Starboard Value LP",
+    "ticker": null
+  },
+  {
+    "cik": "0001446114",
+    "name": "Ancora Advisors LLC",
+    "ticker": null
+  },
+  {
+    "cik": "0001393818",
+    "name": "Blackstone Inc",
+    "ticker": "BX"
+  },
+  {
+    "cik": "0001422849",
+    "name": "Capital World Investors",
+    "ticker": null
+  },
+  {
+    "cik": "0001422848",
+    "name": "Capital Research Global Investors",
+    "ticker": null
+  },
+  {
+    "cik": "0001747057",
+    "name": "D1 Capital Partners LP",
+    "ticker": null
+  },
+  {
+    "cik": "0001762304",
+    "name": "HHLR Advisors Ltd",
+    "ticker": null
+  },
+  {
+    "cik": "0001798849",
+    "name": "Durable Capital Partners LP",
+    "ticker": null
+  },
+  {
+    "cik": "0001387322",
+    "name": "Whale Rock Capital Management LLC",
+    "ticker": null
+  },
+  {
+    "cik": "0001230239",
+    "name": "Alkeon Capital Management LLC",
+    "ticker": null
+  },
+  {
+    "cik": "0001510387",
+    "name": "Gotham Asset Management LLC",
+    "ticker": null
+  },
+  {
+    "cik": "0001517857",
+    "name": "Soroban Capital Partners LP",
+    "ticker": null
+  },
+  {
+    "cik": "0001647251",
+    "name": "TCI Fund Management Ltd",
+    "ticker": null
+  },
+  {
+    "cik": "0000200217",
+    "name": "Dodge & Cox",
+    "ticker": null
+  },
+  {
+    "cik": "0001510281",
+    "name": "Saba Capital Management LP",
+    "ticker": null
+  },
+  {
+    "cik": "0001736225",
+    "name": "ExodusPoint Capital Management LP",
+    "ticker": null
+  },
+  {
+    "cik": "0001410830",
+    "name": "Matrix Capital Management Company LP",
+    "ticker": null
+  },
+  {
+    "cik": "0000934639",
+    "name": "Maverick Capital Ltd",
+    "ticker": null
+  }
 ]

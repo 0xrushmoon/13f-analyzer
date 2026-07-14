@@ -45,10 +45,11 @@ export function createAuth(db: ReturnType<typeof createDb>) {
       sendOnSignUp: true,
       autoSignInAfterVerification: true,
       sendVerificationEmail: async ({ user, url }) => {
-        void sendEmail({
+        const appUrl = process.env.APP_URL ?? process.env.BETTER_AUTH_URL ?? "https://oktangle.com";
+        await sendEmail({
           to: user.email,
           subject: "验证您的 HoldingsKit 邮箱",
-          html: `<p>欢迎注册 HoldingsKit。</p><p>请点击链接验证邮箱：</p><p><a href="${url}">${url}</a></p><p>验证后请前往 <a href="https://oktangle.com/pricing">定价页</a> 完成订阅以使用服务。</p>`,
+          html: `<p>欢迎注册 HoldingsKit。</p><p>请点击下方链接验证邮箱（24 小时内有效）：</p><p><a href="${url}">验证邮箱</a></p><p>若按钮无效，请复制链接到浏览器：<br/>${url}</p><p>验证后请前往 <a href="${appUrl}/pricing">定价页</a> 完成订阅以使用服务。</p>`,
         });
       },
     },
@@ -56,10 +57,10 @@ export function createAuth(db: ReturnType<typeof createDb>) {
       enabled: true,
       requireEmailVerification: true,
       sendResetPassword: async ({ user, url }) => {
-        void sendEmail({
+        await sendEmail({
           to: user.email,
           subject: "重置 HoldingsKit 密码",
-          html: `<p>请点击链接重置密码：</p><p><a href="${url}">${url}</a></p>`,
+          html: `<p>请点击链接重置密码：</p><p><a href="${url}">重置密码</a></p><p>若按钮无效，请复制链接到浏览器：<br/>${url}</p>`,
         });
       },
     },

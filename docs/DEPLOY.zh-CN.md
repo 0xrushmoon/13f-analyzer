@@ -89,11 +89,11 @@ pnpm exec wrangler secret put EMAIL_FROM   # 例：HoldingsKit <noreply@oktangle
 
 ```bash
 # 回填近 4 季度 13F 数据
-curl -X POST https://holdingskit-api.rushmoon.workers.dev/api/admin/backfill \
+curl -X POST https://oktangle.com/api/admin/backfill \
   -H "X-Admin-Secret: <your-secret>"
 
 # 修复 2023 年后市值单位（如需要）
-curl -X POST https://holdingskit-api.rushmoon.workers.dev/api/admin/repair-values \
+curl -X POST https://oktangle.com/api/admin/repair-values \
   -H "X-Admin-Secret: <your-secret>" \
   -H "Content-Type: application/json" \
   -d '{"recomputeChanges":true}'

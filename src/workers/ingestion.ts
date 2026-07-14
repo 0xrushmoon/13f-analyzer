@@ -1,8 +1,14 @@
+import { eq, sql } from "drizzle-orm";
 import { createDb } from "@/lib/db";
-import { eq } from "drizzle-orm";
 import { institutions } from "@/lib/db/schema";
+import {
+  BACKFILL_QUARTER_COUNT,
+  cleanupInstitutionsWithoutHoldings,
+  deleteFailedFilings,
+  deleteInstitutionsNotInSeed,
+} from "@/lib/ingest/cleanup";
 import { processFilingIngest, type IngestMessage } from "@/lib/ingest/processor";
-import { SecEdgarClient, getRecentQuarterEnds } from "@/lib/sec/client";
+import { getRecentQuarterEnds, SecEdgarClient } from "@/lib/sec/client";
 import seedData from "@/data/institutions.seed.json";
 
 export interface Env {
@@ -10,12 +16,17 @@ export interface Env {
   R2: R2Bucket;
   INGEST_QUEUE: Queue;
   SEC_USER_AGENT?: string;
+  ADMIN_SECRET?: string;
+}
+
+function normalizeCik(cik: string): string {
+  return cik.replace(/^0+/, "").padStart(10, "0");
 }
 
 async function seedInstitutions(db: ReturnType<typeof createDb>) {
   const seen = new Set<string>();
   for (const item of seedData) {
-    const cik = item.cik.replace(/^0+/, "").padStart(10, "0");
+    const cik = normalizeCik(item.cik);
     if (seen.has(cik)) continue;
     seen.add(cik);
     await db
@@ -27,7 +38,38 @@ async function seedInstitutions(db: ReturnType<typeof createDb>) {
         tier: "curated",
         isActive: true,
       })
-      .onConflictDoNothing();
+      .onConflictDoUpdate({
+        target: institutions.cik,
+        set: {
+          name: item.name,
+          ticker: item.ticker ?? undefined,
+          isActive: true,
+          updatedAt: sql`(datetime('now'))`,
+        },
+      });
+  }
+}
+
+function buildBackfillMessages(
+  institutionCiks: string[],
+  force: boolean
+): IngestMessage[] {
+  const quarters = getRecentQuarterEnds(BACKFILL_QUARTER_COUNT);
+  const messages: IngestMessage[] = [];
+  for (const cik of institutionCiks) {
+    for (const periodEnd of quarters) {
+      messages.push({ cik, periodEnd, type: "backfill", force });
+    }
+  }
+  return messages;
+}
+
+async function enqueueMessages(env: Env, messages: IngestMessage[]) {
+  const batchSize = 10;
+  for (let i = 0; i < messages.length; i += batchSize) {
+    await env.INGEST_QUEUE.sendBatch(
+      messages.slice(i, i + batchSize).map((body) => ({ body }))
+    );
   }
 }
 
@@ -49,7 +91,7 @@ async function handleQueueBatch(
   }
 }
 
-async function enqueueBackfill(env: Env) {
+async function enqueueBackfill(env: Env, force = false) {
   const db = createDb(env.DB);
   await seedInstitutions(db);
 
@@ -58,27 +100,18 @@ async function enqueueBackfill(env: Env) {
     .from(institutions)
     .where(eq(institutions.isActive, true));
 
-  const quarters = getRecentQuarterEnds(4);
-  const messages: IngestMessage[] = [];
+  const messages = buildBackfillMessages(
+    allInstitutions.map((i) => i.cik),
+    force
+  );
+  await enqueueMessages(env, messages);
 
-  for (const inst of allInstitutions) {
-    for (const periodEnd of quarters) {
-      messages.push({
-        cik: inst.cik,
-        periodEnd,
-        type: "backfill",
-      });
-    }
-  }
-
-  const batchSize = 10;
-  for (let i = 0; i < messages.length; i += batchSize) {
-    await env.INGEST_QUEUE.sendBatch(
-      messages.slice(i, i + batchSize).map((body) => ({ body }))
-    );
-  }
-
-  return { queued: messages.length };
+  return {
+    queued: messages.length,
+    institutions: allInstitutions.length,
+    quarters: BACKFILL_QUARTER_COUNT,
+    force,
+  };
 }
 
 async function enqueueDailySync(env: Env) {
@@ -98,6 +131,51 @@ async function enqueueDailySync(env: Env) {
   return { queued: allInstitutions.length };
 }
 
+async function resyncFromSeed(env: Env) {
+  const db = createDb(env.DB);
+  const seedCiks = seedData.map((item) => normalizeCik(item.cik));
+
+  const removedOutsideSeed = await deleteInstitutionsNotInSeed(
+    db,
+    env.DB,
+    seedCiks
+  );
+  await seedInstitutions(db);
+
+  const allInstitutions = await db
+    .select()
+    .from(institutions)
+    .where(eq(institutions.isActive, true));
+
+  const messages = buildBackfillMessages(
+    allInstitutions.map((i) => i.cik),
+    true
+  );
+  await enqueueMessages(env, messages);
+
+  return {
+    removedOutsideSeed,
+    institutions: allInstitutions.length,
+    queued: messages.length,
+    quarters: BACKFILL_QUARTER_COUNT,
+  };
+}
+
+async function runCleanup(env: Env) {
+  const db = createDb(env.DB);
+  const failedFilingsRemoved = await deleteFailedFilings(env.DB);
+  const { deleted, ciks } = await cleanupInstitutionsWithoutHoldings(
+    db,
+    env.DB
+  );
+  return { failedFilingsRemoved, institutionsDeleted: deleted, deletedCiks: ciks };
+}
+
+function verifyAdmin(request: Request, env: Env): boolean {
+  const adminSecret = request.headers.get("X-Admin-Secret");
+  return Boolean(adminSecret && adminSecret === env.ADMIN_SECRET);
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
@@ -106,13 +184,25 @@ export default {
       return Response.json({ status: "ok" });
     }
 
-    if (url.pathname === "/admin/backfill" && request.method === "POST") {
-      const adminSecret = request.headers.get("X-Admin-Secret");
-      if (!adminSecret || adminSecret !== (env as Env & { ADMIN_SECRET?: string }).ADMIN_SECRET) {
+    if (request.method === "POST" && url.pathname.startsWith("/admin/")) {
+      if (!verifyAdmin(request, env)) {
         return Response.json({ error: "Unauthorized" }, { status: 401 });
       }
-      const result = await enqueueBackfill(env);
-      return Response.json(result);
+
+      if (url.pathname === "/admin/backfill") {
+        const result = await enqueueBackfill(env, false);
+        return Response.json(result);
+      }
+
+      if (url.pathname === "/admin/resync") {
+        const result = await resyncFromSeed(env);
+        return Response.json(result);
+      }
+
+      if (url.pathname === "/admin/cleanup") {
+        const result = await runCleanup(env);
+        return Response.json(result);
+      }
     }
 
     return Response.json({ error: "Not found" }, { status: 404 });
@@ -131,7 +221,7 @@ export default {
       cron === "0 6 15 1,4,7,10 *" || cron === "0 6 30 1,4,7,10 *";
 
     if (isQuarterlyBackfill) {
-      await enqueueBackfill(env);
+      await enqueueBackfill(env, false);
     } else {
       await enqueueDailySync(env);
     }

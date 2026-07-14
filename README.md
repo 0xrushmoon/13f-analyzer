@@ -7,7 +7,7 @@
 [![CI](https://github.com/0xrushmoon/13f-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/0xrushmoon/13f-analyzer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Cloudflare Workers](https://img.shields.io/badge/Deploy-Cloudflare%20Workers-F38020)](https://workers.cloudflare.com/)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-holdingskit--api.rushmoon.workers.dev-22c55e)](https://holdingskit-api.rushmoon.workers.dev)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-oktangle.com-22c55e)](https://oktangle.com)
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [Contributing](CONTRIBUTING.md) · [API Docs](/docs)
 
@@ -21,9 +21,9 @@
 |-------------|-----|------------|
 | **Local (fastest)** | http://localhost:3000 | `pnpm install && pnpm dev` |
 | **Cloudflare local** | http://localhost:8787 | `pnpm preview` (Workers runtime + D1 local) |
-| **Production** | https://holdingskit-api.rushmoon.workers.dev | `pnpm run deploy` |
+| **Production** | https://oktangle.com | `pnpm run deploy` |
 
-> **Live at** https://holdingskit-api.rushmoon.workers.dev  
+> **Live at** https://oktangle.com  
 > Agent Card: `/.well-known/agent-card.json` · OpenAPI: `/openapi.json`
 
 **Cloudflare Dashboard:** [13f-analyzer Worker](https://dash.cloudflare.com/51f97220012f6789ddb53f237d86b13c/workers/services/view/13f-analyzer/production)

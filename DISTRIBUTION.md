@@ -2,21 +2,21 @@
 
 Actionable checklist for search engines, AI agent directories, and developer platforms.
 
-**Production URL:** https://holdingskit-api.rushmoon.workers.dev
+**Production URL:** https://oktangle.com
 
 ## Discovery Endpoints (live after deploy)
 
 | Resource | URL |
 |----------|-----|
-| Sitemap | https://holdingskit-api.rushmoon.workers.dev/sitemap.xml |
-| Robots | https://holdingskit-api.rushmoon.workers.dev/robots.txt |
-| LLMs.txt | https://holdingskit-api.rushmoon.workers.dev/llms.txt |
-| Agent Card (A2A) | https://holdingskit-api.rushmoon.workers.dev/.well-known/agent-card.json |
-| OpenAPI 3.1 | https://holdingskit-api.rushmoon.workers.dev/openapi.json |
-| AI Plugin manifest | https://holdingskit-api.rushmoon.workers.dev/.well-known/ai-plugin.json |
-| MCP info | https://holdingskit-api.rushmoon.workers.dev/.well-known/mcp.json |
-| Security.txt | https://holdingskit-api.rushmoon.workers.dev/.well-known/security.txt |
-| Web App Manifest | https://holdingskit-api.rushmoon.workers.dev/manifest.webmanifest |
+| Sitemap | https://oktangle.com/sitemap.xml |
+| Robots | https://oktangle.com/robots.txt |
+| LLMs.txt | https://oktangle.com/llms.txt |
+| Agent Card (A2A) | https://oktangle.com/.well-known/agent-card.json |
+| OpenAPI 3.1 | https://oktangle.com/openapi.json |
+| AI Plugin manifest | https://oktangle.com/.well-known/ai-plugin.json |
+| MCP info | https://oktangle.com/.well-known/mcp.json |
+| Security.txt | https://oktangle.com/.well-known/security.txt |
+| Web App Manifest | https://oktangle.com/manifest.webmanifest |
 
 ---
 
@@ -25,11 +25,11 @@ Actionable checklist for search engines, AI agent directories, and developer pla
 ### Google Search Console
 
 1. Go to [Google Search Console](https://search.google.com/search-console)
-2. Add property: `https://holdingskit-api.rushmoon.workers.dev`
+2. Add property: `https://oktangle.com`
 3. Choose **HTML tag** verification → copy the `content` value
 4. Set Wrangler secret or env: `GOOGLE_SITE_VERIFICATION=<content-value>`
 5. Redeploy, then click Verify
-6. Submit sitemap: `https://holdingskit-api.rushmoon.workers.dev/sitemap.xml`
+6. Submit sitemap: `https://oktangle.com/sitemap.xml`
 
 ### Bing Webmaster Tools
 
@@ -50,9 +50,9 @@ Submit to registries that accept A2A agent cards:
 {
   "name": "HoldingsKit",
   "description": "Agent-first SEC 13F-HR institutional holdings API with MPP billing",
-  "url": "https://holdingskit-api.rushmoon.workers.dev",
-  "agentCard": "https://holdingskit-api.rushmoon.workers.dev/.well-known/agent-card.json",
-  "openapi": "https://holdingskit-api.rushmoon.workers.dev/openapi.json",
+  "url": "https://oktangle.com",
+  "agentCard": "https://oktangle.com/.well-known/agent-card.json",
+  "openapi": "https://oktangle.com/openapi.json",
   "categories": ["finance", "data", "sec", "13f"],
   "pricing": "pay-per-use ($0.01/query, $0.00001/analyze)"
 }
@@ -73,9 +73,9 @@ Submit to registries that accept A2A agent cards:
 
 Agent-first SEC Form 13F-HR API for institutional holdings intelligence. Query 100+ curated funds (Berkshire, Bridgewater, Renaissance), compare quarter-over-quarter changes, and run DeepSeek AI analysis. Primary payment via MPP (Machine Payments Protocol); humans use Stripe Pro + API keys.
 
-- [Website](https://holdingskit-api.rushmoon.workers.dev)
-- [Agent Card](https://holdingskit-api.rushmoon.workers.dev/.well-known/agent-card.json)
-- [OpenAPI](https://holdingskit-api.rushmoon.workers.dev/openapi.json)
+- [Website](https://oktangle.com)
+- [Agent Card](https://oktangle.com/.well-known/agent-card.json)
+- [OpenAPI](https://oktangle.com/openapi.json)
 - [GitHub](https://github.com/0xrushmoon/13f-analyzer)
 ```
 
@@ -111,9 +111,9 @@ I built HoldingsKit, an open-source platform that ingests SEC Form 13F-HR filing
 
 Agents pay ~$0.01/query via MPP (HTTP 402). Humans get free tier + Stripe Pro.
 
-Live: https://holdingskit-api.rushmoon.workers.dev
+Live: https://oktangle.com
 GitHub: https://github.com/0xrushmoon/13f-analyzer
-Agent Card: https://holdingskit-api.rushmoon.workers.dev/.well-known/agent-card.json
+Agent Card: https://oktangle.com/.well-known/agent-card.json
 
 Would love feedback on the API design and agent discovery approach.
 
@@ -126,7 +126,7 @@ Would love feedback on the API design and agent discovery approach.
 ```
 You are a financial research assistant with access to HoldingsKit, an SEC 13F institutional holdings API.
 
-Use the OpenAPI spec at https://holdingskit-api.rushmoon.workers.dev/openapi.json
+Use the OpenAPI spec at https://oktangle.com/openapi.json
 
 Capabilities:
 - List institutions: GET /api/v1/institutions
@@ -147,9 +147,9 @@ Pricing: $0.01/query, $0.00001/analyze via API key billing.
 ```
 Name: holdingskit
 Description: Query US institutional investor holdings from SEC Form 13F-HR filings. List funds, get portfolio holdings by CIK, compare quarter-over-quarter changes, and run AI analysis on positioning trends.
-Base URL: https://holdingskit-api.rushmoon.workers.dev/api/v1
+Base URL: https://oktangle.com/api/v1
 Auth: Bearer token (API key)
-OpenAPI: https://holdingskit-api.rushmoon.workers.dev/openapi.json
+OpenAPI: https://oktangle.com/openapi.json
 ```
 
 ---

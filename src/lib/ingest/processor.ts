@@ -171,6 +171,13 @@ export async function processFilingIngest(
     const submissions = await client.getSubmissions(cik);
     const allFilings = client.get13FFilings(submissions);
 
+    if (allFilings.length === 0) {
+      console.warn(
+        `No 13F-HR filings on record for CIK ${cik} (${submissions.name})`
+      );
+      return { skipped: true, reason: "no_13f_filings" as const };
+    }
+
     let targetFiling = allFilings[0];
     if (message.accessionNumber) {
       targetFiling =
@@ -266,6 +273,7 @@ export async function processFilingIngest(
       .update(filings)
       .set({
         status: "completed",
+        errorMessage: null,
         r2Key,
         periodEnd: targetFiling.reportDate,
         filedAt: targetFiling.filingDate,

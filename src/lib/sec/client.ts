@@ -287,7 +287,10 @@ export class SecEdgarClient {
   }
 }
 
-export function getRecentQuarterEnds(count = 4): string[] {
+/** Default backfill depth — last 3 completed quarters. */
+export const DEFAULT_BACKFILL_QUARTERS = 3;
+
+export function getRecentQuarterEnds(count = DEFAULT_BACKFILL_QUARTERS): string[] {
   const quarters: string[] = [];
   const now = new Date();
   let year = now.getFullYear();

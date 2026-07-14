@@ -38,7 +38,11 @@
     "setup:cf": "bash scripts/setup-cloudflare.sh",
     "deploy:ingestion": "wrangler deploy --config wrangler.ingestion.jsonc",
     "deploy:scraper": "wrangler deploy --config wrangler.scraper.jsonc",
-    "deploy:all": "bash scripts/deploy-all.sh"
+    "deploy:all": "bash scripts/deploy-all.sh",
+    "resync:seed": "node scripts/resync-seed.mjs",
+    "resync:remote": "node scripts/run-resync-remote.mjs",
+    "cleanup:remote": "node scripts/cleanup-remote.mjs",
+    "enqueue:missing": "node scripts/enqueue-missing.mjs"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.3.0",

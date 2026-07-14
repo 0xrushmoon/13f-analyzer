@@ -7,7 +7,7 @@
 [![CI](https://github.com/0xrushmoon/13f-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/0xrushmoon/13f-analyzer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Cloudflare Workers](https://img.shields.io/badge/Deploy-Cloudflare%20Workers-F38020)](https://workers.cloudflare.com/)
-[![在线预览](https://img.shields.io/badge/在线预览-holdingskit--api.rushmoon.workers.dev-22c55e)](https://holdingskit-api.rushmoon.workers.dev)
+[![在线预览](https://img.shields.io/badge/在线预览-oktangle.com-22c55e)](https://oktangle.com)
 
 [English](README.md) · [简体中文](README.zh-CN.md) · [贡献指南](CONTRIBUTING.zh-CN.md) · [API 文档](/docs)
 
@@ -21,9 +21,9 @@
 |------|------|----------|
 | **本地开发（最快）** | http://localhost:3000 | `pnpm install && pnpm dev` |
 | **Cloudflare 本地** | http://localhost:8787 | `pnpm preview`（Workers 运行时 + 本地 D1） |
-| **生产环境** | https://holdingskit-api.rushmoon.workers.dev | `pnpm run deploy` |
+| **生产环境** | https://oktangle.com | `pnpm run deploy` |
 
-> **已上线** https://holdingskit-api.rushmoon.workers.dev  
+> **已上线** https://oktangle.com  
 > Agent Card：`/.well-known/agent-card.json` · OpenAPI：`/openapi.json`
 
 **Cloudflare 控制台：** [holdingskit-api Worker](https://dash.cloudflare.com/51f97220012f6789ddb53f237d86b13c/workers/services/view/holdingskit-api/production)
